@@ -1,0 +1,76 @@
+{
+	"definitions": {
+		"Tag": {
+			"required": [
+				"epc",
+				"gtin",
+				"facility_id",
+				"event",
+				"arrived",
+				"last_read",
+				"source",
+				"epc_state"
+			],
+			"properties": {
+				"epc": {
+						"type": "string"
+				},
+				"gtin": {
+					"type": "string"
+				},
+				"company_prefix": {
+					"type": "number"
+				},
+				"tid": {
+					"type": "string"
+				},
+				"encode_format": {
+					"type": "string"
+				},
+				"facility_id": {
+					"type": "string"
+				},
+				"event": {
+					"type": "string"
+				},
+				"arrived": {
+					"type": "number"
+				},
+				"last_read": {
+					"type": "number"
+				},
+				"source": {
+					"type": "string"
+				},
+				"location_history": {
+					"type": "array",
+					"location": {
+						"type": "string"
+					},
+					"timestamp": {
+						"type": "number"
+					},
+					"source": {
+						"type": "string"
+					}
+				},
+				"epc_state": {
+					"type": "string"
+				},
+				"qualified_state": {
+					"type": "string"
+				},
+				"ttl": {
+					"type": "number"
+				},
+				"epc_context": {
+					"type": "string"
+				},
+				"confidence": {
+					"type": "number"
+				}
+			},
+			"additionalProperties": false
+		}
+	}
+}

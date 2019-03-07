@@ -1,0 +1,59 @@
+{ "data":[ {
+      "confidence": 0.7174295463828799,
+      "epc": "30340B9D0C1F23C000000002",
+      "epc_state": "departed",
+      "facility_id": "Shoe_Front_BP",
+      "last_read": 1512762547654,
+      "location_history": [
+        {
+          "location": "RSP-95a3ea",
+          "timestamp": 1512762542329,
+          "source": "fixed"
+        },
+        {
+          "location": "RSP-95c271",
+          "timestamp": 1512762487041,
+          "source": "fixed"
+        },
+        {
+          "location": "RSP-951cf0",
+          "timestamp": 1512762459141,
+          "source": "fixed"
+        },
+        {
+          "location": "RSP-95c271",
+          "timestamp": 1512762390923,
+          "source": "fixed"
+        },
+        {
+          "location": "RSP-9565c6",
+          "timestamp": 1512762238526,
+          "source": "fixed"
+        },
+        {
+          "location": "RSP-95a3ea",
+          "timestamp": 1512762201733,
+          "source": "fixed"
+        },
+        {
+          "location": "RSP-9534e2",
+          "timestamp": 1512741598540,
+          "source": "fixed"
+        },
+        {
+          "location": "RSP-956663",
+          "timestamp": 1512738510106,
+          "source": "fixed"
+        },
+        {
+          "location": "RSP-9534e2",
+          "timestamp": 1512736860062,
+          "source": "fixed"
+        },
+        {
+          "location": "RSP-956663",
+          "timestamp": 1512736784344,
+          "source": "fixed"
+        }
+    ]}]
+}

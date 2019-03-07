@@ -1,0 +1,121 @@
+{
+	"comment": "",
+	"ignore": "test",
+	"package": [
+		{
+			"checksumSHA1": "Ixz+tDG4HsFokZH06wx3KNG5NZ4=",
+			"path": "github.com/globalsign/mgo",
+			"revision": "896bbb89d21253a28cd5a7f8b81fe091410cb94d",
+			"revisionTime": "2018-01-15T17:41:36Z"
+		},
+		{
+			"checksumSHA1": "20/KUMBiBbevHleJU9eoTUwFr2w=",
+			"path": "github.com/globalsign/mgo/bson",
+			"revision": "896bbb89d21253a28cd5a7f8b81fe091410cb94d",
+			"revisionTime": "2018-01-15T17:41:36Z"
+		},
+		{
+			"checksumSHA1": "//bXQG4HblBwxHJDIW/PklXAxu0=",
+			"path": "github.com/globalsign/mgo/internal/json",
+			"revision": "896bbb89d21253a28cd5a7f8b81fe091410cb94d",
+			"revisionTime": "2018-01-15T17:41:36Z"
+		},
+		{
+			"checksumSHA1": "zSNjAU41khuKovmSSkhVqXf5q4A=",
+			"path": "github.com/globalsign/mgo/internal/sasl",
+			"revision": "896bbb89d21253a28cd5a7f8b81fe091410cb94d",
+			"revisionTime": "2018-01-15T17:41:36Z"
+		},
+		{
+			"checksumSHA1": "YogZ7HaSnE0pxdiP48GdI1+CXeI=",
+			"path": "github.com/globalsign/mgo/internal/scram",
+			"revision": "896bbb89d21253a28cd5a7f8b81fe091410cb94d",
+			"revisionTime": "2018-01-15T17:41:36Z"
+		},
+		{
+			"checksumSHA1": "zmCk+lgIeiOf0Ng9aFP9aFy8ksE=",
+			"path": "github.com/gorilla/mux",
+			"revision": "599cba5e7b6137d46ddf58fb1765f5d928e69604",
+			"revisionTime": "2017-02-28T22:43:54Z"
+		},
+		{
+			"checksumSHA1": "HxlxvREYfAeiA9DKVhNILfJ8uyk=",
+			"path": "github.com/gorilla/websocket",
+			"revision": "4835f71f2aa5630afb746b4b20d06d6d39630b98",
+			"revisionTime": "2018-03-06T17:21:16Z"
+		},
+		{
+			"checksumSHA1": "Op+vCwiOTLgCMDFrTO98Hwum6hg=",
+			"path": "github.com/influxdata/influxdb/client",
+			"revision": "4a7361d0317abf8f160e8d597213bc7400bb6d14",
+			"revisionTime": "2017-12-19T18:53:49Z"
+		},
+		{
+			"checksumSHA1": "TrPglEvTo7PkUsobn9NHs0FA9uU=",
+			"path": "github.com/influxdata/influxdb/models",
+			"revision": "4a7361d0317abf8f160e8d597213bc7400bb6d14",
+			"revisionTime": "2017-12-19T18:53:49Z"
+		},
+		{
+			"checksumSHA1": "H/J/qLqzUONXIecHHKtVZmxJZZA=",
+			"path": "github.com/influxdata/influxdb/pkg/escape",
+			"revision": "4a7361d0317abf8f160e8d597213bc7400bb6d14",
+			"revisionTime": "2017-12-19T18:53:49Z"
+		},
+		{
+			"checksumSHA1": "Se195FlZ160eaEk/uVx4KdTPSxU=",
+			"path": "github.com/pborman/uuid",
+			"revision": "e790cca94e6cc75c7064b1332e63811d4aae1a53",
+			"revisionTime": "2017-06-12T15:36:48Z"
+		},
+		{
+			"checksumSHA1": "rJab1YdNhQooDiBWNnt7TLWPyBU=",
+			"path": "github.com/pkg/errors",
+			"revision": "c605e284fe17294bda444b34710735b29d1a9d90",
+			"revisionTime": "2017-05-05T04:36:39Z"
+		},
+		{
+			"checksumSHA1": "x/C9sWJ33glBGKgGvb8VvUQvR8s=",
+			"path": "github.com/sirupsen/logrus",
+			"revision": "5e5dc898656f695e2a086b8e12559febbfc01562",
+			"revisionTime": "2017-05-15T10:45:16Z"
+		},
+		{
+			"checksumSHA1": "f3BpBZ9nWTqjjxBAC53+mpGdHO4=",
+			"origin": "github.impcloud.net/Responsive-Retail-Core/go-odata.git",
+			"path": "github.impcloud.net/Responsive-Retail-Core/go-odata",
+			"revision": "15d217d2bfc1b4d5a543c721323316d41661906a",
+			"revisionTime": "2018-04-17T17:49:55Z",
+			"tree": true
+		},
+		{
+			"checksumSHA1": "qbfpRtU/9NzXExXgSLG3zM3Wc2Q=",
+			"origin": "github.impcloud.net/Responsive-Retail-Core/mongodb.git",
+			"path": "github.impcloud.net/Responsive-Retail-Core/mongodb",
+			"revision": "c35f98d88fbc4b63aace4ed434a6ebdb50f554d9",
+			"revisionTime": "2018-04-18T17:39:06Z",
+			"tree": true
+		},
+		{
+			"checksumSHA1": "G1E9l7R/zDk+6m/vHOF1vOCEYb8=",
+			"origin": "github.impcloud.net/Responsive-Retail-Core/utilities.git",
+			"path": "github.impcloud.net/Responsive-Retail-Core/utilities",
+			"revision": "0016306a07216bc990fe4e9ab661087861a5b213",
+			"revisionTime": "2018-04-18T17:13:06Z",
+			"tree": true
+		},
+		{
+			"checksumSHA1": "7EZyXN0EmZLgGxZxK01IJua4c8o=",
+			"path": "golang.org/x/net/websocket",
+			"revision": "66aacef3dd8a676686c7ae3716979581e8b03c47",
+			"revisionTime": "2016-09-14T00:11:54Z"
+		},
+		{
+			"checksumSHA1": "4t38rpjTv5UgjxMMFKn4ad+DhU8=",
+			"path": "golang.org/x/sys/unix",
+			"revision": "b90f89a1e7a9c1f6b918820b3daa7f08488c8594",
+			"revisionTime": "2017-05-29T13:44:53Z"
+		}
+	],
+	"rootPath": "github.impcloud.net/Responsive-Retail-Inventory/mapping-sku-service"
+}
