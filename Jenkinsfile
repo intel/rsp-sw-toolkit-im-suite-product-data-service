@@ -3,9 +3,10 @@ rrpBuildGoCode {
     testDependencies = ['mongo']
     dockerBuildOptions = ['--squash', '--build-arg GIT_COMMIT=$GIT_COMMIT']
     ecrRegistry = "280211473891.dkr.ecr.us-west-2.amazonaws.com"
+    dockerImageName = "rsd/${projectKey}"
 
     infra = [
-        stackName: 'RRP-Codepipeline-ProductDataService'
+        stackName: 'RSP-Codepipeline-ProductDataService'
     ]
 
     notify = [
