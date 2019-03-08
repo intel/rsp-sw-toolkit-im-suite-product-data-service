@@ -29,7 +29,7 @@ import (
 	odata "github.impcloud.net/Responsive-Retail-Core/go-odata/mongo"
 	db "github.impcloud.net/Responsive-Retail-Core/mongodb"
 	"github.impcloud.net/Responsive-Retail-Core/utilities/go-metrics"
-	"github.impcloud.net/Responsive-Retail-Inventory/mapping-sku-service/pkg/web"
+	"github.impcloud.net/RSP-Inventory-Suite/product-data-service/pkg/web"
 )
 
 const mappingCollection = "skus"

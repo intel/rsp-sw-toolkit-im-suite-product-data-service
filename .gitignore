@@ -24,7 +24,7 @@ _testmain.go
 *.prof
 
 # Binary
-mapping-sku-service
+product-data-service
 debug
 debug.test
 dbclient/debug.test
@@ -36,7 +36,7 @@ settings.json
 tasks.json
 
 #goreporter files
-mapping-sku-service-*.html
+product-data-service-*.html
 
 data/
 

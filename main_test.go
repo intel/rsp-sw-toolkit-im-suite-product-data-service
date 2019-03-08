@@ -25,7 +25,7 @@ import (
 	"time"
 
 	db "github.impcloud.net/Responsive-Retail-Core/mongodb"
-	"github.impcloud.net/Responsive-Retail-Inventory/mapping-sku-service/app/config"
+	"github.impcloud.net/RSP-Inventory-Suite/product-data-service/app/config"
 )
 
 var dbHost string

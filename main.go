@@ -28,7 +28,7 @@ import (
 	"sync"
 	"time"
 
-	"github.impcloud.net/Responsive-Retail-Inventory/mapping-sku-service/app/mapping"
+	"github.impcloud.net/RSP-Inventory-Suite/product-data-service/app/mapping"
 
 	"github.com/globalsign/mgo"
 
@@ -37,12 +37,12 @@ import (
 
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
+	"github.impcloud.net/RSP-Inventory-Suite/product-data-service/app/config"
+	"github.impcloud.net/RSP-Inventory-Suite/product-data-service/app/routes"
+	"github.impcloud.net/RSP-Inventory-Suite/product-data-service/pkg/healthcheck"
 	db "github.impcloud.net/Responsive-Retail-Core/mongodb"
 	"github.impcloud.net/Responsive-Retail-Core/utilities/go-metrics"
 	reporter "github.impcloud.net/Responsive-Retail-Core/utilities/go-metrics-influxdb"
-	"github.impcloud.net/Responsive-Retail-Inventory/mapping-sku-service/app/config"
-	"github.impcloud.net/Responsive-Retail-Inventory/mapping-sku-service/app/routes"
-	"github.impcloud.net/Responsive-Retail-Inventory/mapping-sku-service/pkg/healthcheck"
 )
 
 const prodDataUrn = "urn:x-intel:context:thing:productmasterdata"

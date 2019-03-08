@@ -26,7 +26,7 @@ import (
 	"strconv"
 
 	log "github.com/sirupsen/logrus"
-	"github.impcloud.net/Responsive-Retail-Inventory/mapping-sku-service/pkg/web"
+	"github.impcloud.net/RSP-Inventory-Suite/product-data-service/pkg/web"
 )
 
 // max size limit of body 16MB

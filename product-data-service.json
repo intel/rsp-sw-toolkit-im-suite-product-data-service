@@ -11,7 +11,7 @@
   ],
   "swagger": "2.0",
   "info": {
-    "description": "Retailers typically refer to inventory based on SKU. This sku mapping service provides RRP with the necessary enterprise data to properly\nidentify products in our system to notify Retailers of events that occur within RRP. Endpoints are provided for uploading SKU/UPC mapping\ndata along with all associated metadata (ie. size, color, model) into the RRP System. RFID sensed inventory is read from item tags (EPCs)\nwhich then get converted to UPCs.\n\n__Known services this service depends on:__\n\n○ Context Sensing\n\n○ MongoDB\n\n\n__Known services that depend upon this service:__\n\n○ Rules\n\nThe is the schema associated to this URN urn:x-intel:context:thing:productmasterdata\n\n```json\n{\n\"type\": \"urn:x-intel:context:thing:productmasterdata\",\n\"schema\": {\n\"type\": \"object\",\n\"properties\": {\n\"data\": {\n\"type\": \"array\",\n\"items\": {\n\"type\": \"object\",\n\"properties\": {\n\"metadata\": {\n\"type\": \"object\",\n\"properties\": {\n\"dept\": {\n\"type\": \"integer\"\n},\n\"supplier\": {\n\"type\": \"integer\"\n},\n\"sup_name\": {\n\"type\": \"string\"\n},\n\"class\": {\n\"type\": \"integer\"\n},\n\"vpn\": {\n\"type\": \"string\"\n},\n\"supp_color\": {\n\"type\": \"string\"\n},\n\"primary_upc_ind\": {\n\"type\": \"string\"\n},\n\"supp_size\": {\n\"type\": \"string\"\n},\n\"upc_desc\": {\n\"type\": \"string\"\n},\n\"unit_retail\": {\n\"type\": \"number\"\n}\n}\n},\n\"dailyTurn\":{\n\"type\":[\"number\"],\n\"minimum\": 0,\n\"maximum\": 1\n},\n\"becomingReadable\":{\n\"type\":[\"number\"],\n\"minimum\": 0,\n\"maximum\": 1\n},\n\"exitError\":{\n\"type\":[\"number\"],\n\"minimum\": 0,\n\"maximum\": 1\n},\n\"beingRead\":{\n\"type\":[\"number\"],\n\"minimum\": 0,\n\"maximum\": 1\n},\n\"sku\": {\n\"type\": \"string\"\n},\n\"productId\": {\n\"type\": \"string\"\n}\n},\n\"required\": [\"sku\", \"productId\"]\n}\n}\n}\n},\n\"descriptions\": {\n\"en\": {\n\"documentation\": \"Reads the product masterdata from a csv file and publishes the data to the broker.\",\n\"short_name\": \"Product Master Data\"\n}\n}\n}\n```\n## __Example configuration file json__\n```json\n{\n\u0026#9\u0026#9\"serviceName\": \"RRP - mapping-sku-service\",\n\u0026#9\u0026#9\"databaseName\": \"mapping\",\n\u0026#9\u0026#9\"loggingLevel\": \"debug\",\n\u0026#9\u0026#9\"secureMode\" : false,\n\u0026#9\u0026#9\"skipCertVerify\" : false,\n\u0026#9\u0026#9\"telemetryEndpoint\": \"http://166.130.9.122:8000\",\n\u0026#9\u0026#9\"telemetryDataStoreName\" : \"Store105\",\n\u0026#9\u0026#9\"port\": \"8080\"\n\u0026#9\u0026#9\"responseLimit\": 10000,\n}\n```\n## __Example environment variables in compose File__:\n```json\n{\n\u0026#9\u0026#9contextSdk: \"127.0.0.1:8888\"\n\u0026#9\u0026#9connectionString: \"mongodb://127.0.0.1:27017\"\n}\n```\n###__Configuration file values__\n+ `serviceName`  \t\t\t\t - Runtime name of the service\n\n+ `databaseName`  \t\t\t\t - Name of database\n\n+ `loggingLevel`  \t\t\t\t - Logging level to use: \"info\" (default) or \"debug\" (verbose)\n\n+ `secureMode`  \t\t\t\t\t - Boolean flag indicating if using secure connection to the Context Brokers\n\n+ `skipCertVerify`  \t\t\t\t - Boolean flag indicating if secure connection to the Context Brokers should skip certificate validation\n\n+ `telemetryEndpoint`  \t\t\t\t - URL of the telemetry service receiving the metrics from the service\n\n+ `telemetryDataStoreName`  \t\t - Name of the data store in the telemetry service to store the metrics\n\n+ `port`  \t\t\t\t\t\t - Port to run the service/s HTTP Server on\n\n+ `responseLimit`  \t\t\t\t - Default limit to what can be returned in a GET call - because of this, client must define their own top-skip functionality\n\n###__Compose file environment variable values__\n\n+ `contextSdk`  \t\t\t- Host and port number for the Context Broker\n\n+ `connectionString`  \t- Host and port number for the Database connection\n\n## __Known services this service depends on:__\n+ context-broker\nThese are the topics that this service subscribes to from the Context Sensing SDK Websocket bus. To learn more about the Context Sensing SDK, please visit http://contextsensing.intel.com/\n```\n\u0026#9prodDataUrn        = \"urn:x-intel:context:thing:productmasterdata\"\n\n```\n+ rrp-mongo\n\n## __Known services that depend upon this service:__\n+ item-finder\n+ rules-service\n\nCopyright 2018 Intel® Corporation, All rights reserved.",
+    "description": "Retailers typically refer to inventory based on SKU. This sku mapping service provides RRP with the necessary enterprise data to properly\nidentify products in our system to notify Retailers of events that occur within RRP. Endpoints are provided for uploading SKU/UPC mapping\ndata along with all associated metadata (ie. size, color, model) into the RRP System. RFID sensed inventory is read from item tags (EPCs)\nwhich then get converted to UPCs.\n\n__Known services this service depends on:__\n\n○ Context Sensing\n\n○ MongoDB\n\n\n__Known services that depend upon this service:__\n\n○ Rules\n\nThe is the schema associated to this URN urn:x-intel:context:thing:productmasterdata\n\n```json\n{\n\"type\": \"urn:x-intel:context:thing:productmasterdata\",\n\"schema\": {\n\"type\": \"object\",\n\"properties\": {\n\"data\": {\n\"type\": \"array\",\n\"items\": {\n\"type\": \"object\",\n\"properties\": {\n\"metadata\": {\n\"type\": \"object\",\n\"properties\": {\n\"dept\": {\n\"type\": \"integer\"\n},\n\"supplier\": {\n\"type\": \"integer\"\n},\n\"sup_name\": {\n\"type\": \"string\"\n},\n\"class\": {\n\"type\": \"integer\"\n},\n\"vpn\": {\n\"type\": \"string\"\n},\n\"supp_color\": {\n\"type\": \"string\"\n},\n\"primary_upc_ind\": {\n\"type\": \"string\"\n},\n\"supp_size\": {\n\"type\": \"string\"\n},\n\"upc_desc\": {\n\"type\": \"string\"\n},\n\"unit_retail\": {\n\"type\": \"number\"\n}\n}\n},\n\"dailyTurn\":{\n\"type\":[\"number\"],\n\"minimum\": 0,\n\"maximum\": 1\n},\n\"becomingReadable\":{\n\"type\":[\"number\"],\n\"minimum\": 0,\n\"maximum\": 1\n},\n\"exitError\":{\n\"type\":[\"number\"],\n\"minimum\": 0,\n\"maximum\": 1\n},\n\"beingRead\":{\n\"type\":[\"number\"],\n\"minimum\": 0,\n\"maximum\": 1\n},\n\"sku\": {\n\"type\": \"string\"\n},\n\"productId\": {\n\"type\": \"string\"\n}\n},\n\"required\": [\"sku\", \"productId\"]\n}\n}\n}\n},\n\"descriptions\": {\n\"en\": {\n\"documentation\": \"Reads the product masterdata from a csv file and publishes the data to the broker.\",\n\"short_name\": \"Product Master Data\"\n}\n}\n}\n```\n## __Example configuration file json__\n```json\n{\n\u0026#9\u0026#9\"serviceName\": \"RRP - product-data-service\",\n\u0026#9\u0026#9\"databaseName\": \"mapping\",\n\u0026#9\u0026#9\"loggingLevel\": \"debug\",\n\u0026#9\u0026#9\"secureMode\" : false,\n\u0026#9\u0026#9\"skipCertVerify\" : false,\n\u0026#9\u0026#9\"telemetryEndpoint\": \"http://166.130.9.122:8000\",\n\u0026#9\u0026#9\"telemetryDataStoreName\" : \"Store105\",\n\u0026#9\u0026#9\"port\": \"8080\"\n\u0026#9\u0026#9\"responseLimit\": 10000,\n}\n```\n## __Example environment variables in compose File__:\n```json\n{\n\u0026#9\u0026#9contextSdk: \"127.0.0.1:8888\"\n\u0026#9\u0026#9connectionString: \"mongodb://127.0.0.1:27017\"\n}\n```\n###__Configuration file values__\n+ `serviceName`  \t\t\t\t - Runtime name of the service\n\n+ `databaseName`  \t\t\t\t - Name of database\n\n+ `loggingLevel`  \t\t\t\t - Logging level to use: \"info\" (default) or \"debug\" (verbose)\n\n+ `secureMode`  \t\t\t\t\t - Boolean flag indicating if using secure connection to the Context Brokers\n\n+ `skipCertVerify`  \t\t\t\t - Boolean flag indicating if secure connection to the Context Brokers should skip certificate validation\n\n+ `telemetryEndpoint`  \t\t\t\t - URL of the telemetry service receiving the metrics from the service\n\n+ `telemetryDataStoreName`  \t\t - Name of the data store in the telemetry service to store the metrics\n\n+ `port`  \t\t\t\t\t\t - Port to run the service/s HTTP Server on\n\n+ `responseLimit`  \t\t\t\t - Default limit to what can be returned in a GET call - because of this, client must define their own top-skip functionality\n\n###__Compose file environment variable values__\n\n+ `contextSdk`  \t\t\t- Host and port number for the Context Broker\n\n+ `connectionString`  \t- Host and port number for the Database connection\n\n## __Known services this service depends on:__\n+ context-broker\nThese are the topics that this service subscribes to from the Context Sensing SDK Websocket bus. To learn more about the Context Sensing SDK, please visit http://contextsensing.intel.com/\n```\n\u0026#9prodDataUrn        = \"urn:x-intel:context:thing:productmasterdata\"\n\n```\n+ rrp-mongo\n\n## __Known services that depend upon this service:__\n+ item-finder\n+ rules-service\n\nCopyright 2018 Intel® Corporation, All rights reserved.",
     "title": "SKU Mapping API.",
     "contact": {
       "name": "RRP",
@@ -214,7 +214,7 @@
     "DB": {
       "description": "DB is a collection of support for different DB technologies. Currently\nonly MongoDB has been implemented. We want to be able to access the raw\ndatabase support for the given DB so an interface does not work. Each\ndatabase is too different.",
       "type": "object",
-      "x-go-package": "github.impcloud.net/Responsive-Retail-Inventory/mapping-sku-service/vendor/github.impcloud.net/Responsive-Retail-Core/mongodb"
+      "x-go-package": "github.impcloud.net/Responsive-Retail-Inventory/product-data-service/vendor/github.impcloud.net/Responsive-Retail-Core/mongodb"
     },
     "ErrReport": {
       "description": "ErrReport is used to wrap schema validation errors int json object",
@@ -237,7 +237,7 @@
           "x-go-name": "Value"
         }
       },
-      "x-go-package": "github.impcloud.net/Responsive-Retail-Inventory/mapping-sku-service/app/routes/handlers"
+      "x-go-package": "github.impcloud.net/Responsive-Retail-Inventory/product-data-service/app/routes/handlers"
     },
     "ErrorList": {
       "description": "ErrorList provides a collection of errors for processing",
@@ -252,7 +252,7 @@
           "x-go-name": "Errors"
         }
       },
-      "x-go-package": "github.impcloud.net/Responsive-Retail-Inventory/mapping-sku-service/app/routes/handlers"
+      "x-go-package": "github.impcloud.net/Responsive-Retail-Inventory/product-data-service/app/routes/handlers"
     },
     "Mapping": {
       "type": "object",
@@ -266,7 +266,7 @@
           "format": "int64"
         }
       },
-      "x-go-package": "github.impcloud.net/Responsive-Retail-Inventory/mapping-sku-service/app/routes/handlers"
+      "x-go-package": "github.impcloud.net/Responsive-Retail-Inventory/product-data-service/app/routes/handlers"
     },
     "ProdData": {
       "description": "ProdData represents the product data schema in the database",
@@ -284,7 +284,7 @@
           "x-go-name": "Sku"
         }
       },
-      "x-go-package": "github.impcloud.net/Responsive-Retail-Inventory/mapping-sku-service/app/mapping"
+      "x-go-package": "github.impcloud.net/Responsive-Retail-Inventory/product-data-service/app/mapping"
     },
     "ProductMetadata": {
       "description": "UpcMetadata represents the UpcList schema attribute in the database",
@@ -322,7 +322,7 @@
           "x-go-name": "ProductID"
         }
       },
-      "x-go-package": "github.impcloud.net/Responsive-Retail-Inventory/mapping-sku-service/app/mapping"
+      "x-go-package": "github.impcloud.net/Responsive-Retail-Inventory/product-data-service/app/mapping"
     },
     "resultsResponse": {
       "description": "Response wraps results, inlinecount, and extra fields in a json object",
@@ -340,7 +340,7 @@
         }
       },
       "x-go-name": "Response",
-      "x-go-package": "github.impcloud.net/Responsive-Retail-Inventory/mapping-sku-service/app/routes/handlers"
+      "x-go-package": "github.impcloud.net/Responsive-Retail-Inventory/product-data-service/app/routes/handlers"
     }
   },
   "responses": {

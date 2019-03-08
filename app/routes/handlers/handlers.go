@@ -32,8 +32,8 @@ import (
 	"github.impcloud.net/Responsive-Retail-Core/utilities/gojsonschema"
 
 	db "github.impcloud.net/Responsive-Retail-Core/mongodb"
-	"github.impcloud.net/Responsive-Retail-Inventory/mapping-sku-service/app/mapping"
-	"github.impcloud.net/Responsive-Retail-Inventory/mapping-sku-service/pkg/web"
+	"github.impcloud.net/RSP-Inventory-Suite/product-data-service/app/mapping"
+	"github.impcloud.net/RSP-Inventory-Suite/product-data-service/pkg/web"
 )
 
 // Mapping represents the User API method handler set.

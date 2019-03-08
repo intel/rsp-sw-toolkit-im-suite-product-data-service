@@ -24,9 +24,9 @@ import (
 	"github.com/gorilla/mux"
 
 	db "github.impcloud.net/Responsive-Retail-Core/mongodb"
-	"github.impcloud.net/Responsive-Retail-Inventory/mapping-sku-service/app/routes/handlers"
-	"github.impcloud.net/Responsive-Retail-Inventory/mapping-sku-service/pkg/middlewares"
-	"github.impcloud.net/Responsive-Retail-Inventory/mapping-sku-service/pkg/web"
+	"github.impcloud.net/RSP-Inventory-Suite/product-data-service/app/routes/handlers"
+	"github.impcloud.net/RSP-Inventory-Suite/product-data-service/pkg/middlewares"
+	"github.impcloud.net/RSP-Inventory-Suite/product-data-service/pkg/web"
 )
 
 // Route struct holds attributes to declare routes

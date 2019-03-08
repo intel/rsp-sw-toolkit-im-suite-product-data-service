@@ -107,7 +107,7 @@
 //	## __Example configuration file json__
 //```json
 // {
-//	&#9&#9"serviceName": "RRP - mapping-sku-service",
+//	&#9&#9"serviceName": "RRP - product-data-service",
 //  &#9&#9"databaseName": "mapping",
 //  &#9&#9"loggingLevel": "debug",
 //  &#9&#9"secureMode" : false,

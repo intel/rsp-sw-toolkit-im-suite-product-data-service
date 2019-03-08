@@ -25,7 +25,7 @@ import (
 	"runtime/debug"
 
 	log "github.com/sirupsen/logrus"
-	"github.impcloud.net/Responsive-Retail-Inventory/mapping-sku-service/pkg/web"
+	"github.impcloud.net/RSP-Inventory-Suite/product-data-service/pkg/web"
 )
 
 // Recover middleware
