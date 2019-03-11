@@ -12,8 +12,6 @@ github.com/pkg/errors v0.0.0-20170505043639-c605e284fe17 h1:chPfVn+gpAM5CTpTyVU9
 github.com/pkg/errors v0.0.0-20170505043639-c605e284fe17/go.mod h1:bwawxfHBFNV+L2hUp1rHADufV3IMtnDRdf1r5NINEl0=
 github.com/sirupsen/logrus v0.0.0-20170515105910-5e5dc898656f h1:UkMQgoM2O57OKrzYDryhKcdKCcvs7WU0Tj+6P5HhmpQ=
 github.com/sirupsen/logrus v0.0.0-20170515105910-5e5dc898656f/go.mod h1:pMByvHTf9Beacp5x1UXfOR9xyW/9antXMhjMPG0dEzc=
-github.impcloud.net/RSP-Inventory-Suite/product-data-service v0.0.0-20190311180318-df9dc091af1e h1:fyqdXLaOrKyBHAh7doM5D3UOxz6Alb6nBlGG2EYZWyM=
-github.impcloud.net/RSP-Inventory-Suite/product-data-service v0.0.0-20190311180318-df9dc091af1e/go.mod h1:VSjOE181fHyIRpZpoOFEkhTjFdZe412QM/4+sZqkfuk=
 github.impcloud.net/Responsive-Retail-Core/go-odata v0.0.0-20180417174955-15d217d2bfc1 h1:6GHAa1CeusmSBJ3k3kS6jq6kV64mxCD1p2eVZ6HyIqY=
 github.impcloud.net/Responsive-Retail-Core/go-odata v0.0.0-20180417174955-15d217d2bfc1/go.mod h1:Z2ojgA0eN0s8fKiOobFQDPLTNvnrUsJrLIRu3C/k4Eo=
 github.impcloud.net/Responsive-Retail-Core/mongodb v0.0.0-20180418173906-c35f98d88fbc h1:KTRYnwAY8aFjHDUjXtLMuTmfVmgT+s0L3hUTBg76ZOo=

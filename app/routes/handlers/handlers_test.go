@@ -21,20 +21,19 @@ package handlers
 import (
 	"bytes"
 	"encoding/json"
-	"github.com/sirupsen/logrus"
 	"net/http"
 	"net/http/httptest"
 	"strings"
 	"testing"
 	"time"
 
-	"log"
-
 	"github.com/gorilla/mux"
-	db "github.impcloud.net/Responsive-Retail-Core/mongodb"
+	"github.com/sirupsen/logrus"
+	log "github.com/sirupsen/logrus"
 	"github.impcloud.net/RSP-Inventory-Suite/product-data-service/app/config"
 	"github.impcloud.net/RSP-Inventory-Suite/product-data-service/app/mapping"
 	"github.impcloud.net/RSP-Inventory-Suite/product-data-service/pkg/web"
+	db "github.impcloud.net/Responsive-Retail-Core/mongodb"
 )
 
 var dbHost string
@@ -46,7 +45,7 @@ type inputTest struct {
 
 func init() {
 	if testing.Verbose() {
-		logrus.SetLevel(logrus.DebugLevel)
+		log.SetLevel(logrus.DebugLevel)
 	}
 
 	err := config.InitConfig()
