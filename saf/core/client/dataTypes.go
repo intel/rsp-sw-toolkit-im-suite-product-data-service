@@ -15,7 +15,7 @@
 package client
 
 import (
-	"context_linux_go/core"
+	"github.impcloud.net/RSP-Inventory-Suite/product-data-service/saf/core"
 )
 
 // ClientInterface represents an abstract connection to a broker server (bus) which distributes messages

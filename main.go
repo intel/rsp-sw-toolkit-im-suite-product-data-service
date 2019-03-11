@@ -32,8 +32,8 @@ import (
 
 	"github.com/globalsign/mgo"
 
-	"context_linux_go/core"
-	"context_linux_go/core/sensing"
+	"github.impcloud.net/RSP-Inventory-Suite/product-data-service/saf/core"
+	"github.impcloud.net/RSP-Inventory-Suite/product-data-service/saf/core/sensing"
 
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"

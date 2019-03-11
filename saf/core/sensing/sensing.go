@@ -1,12 +1,12 @@
 //
 // INTEL CONFIDENTIAL
 // Copyright 2017 Intel Corporation.
-// 
+//
 // This software and the related documents are Intel copyrighted materials, and your use of them is governed
 // by the express license under which they were provided to you (License). Unless the License provides otherwise,
 // you may not use, modify, copy, publish, distribute, disclose or transmit this software or the related documents
 // without Intel's prior written permission.
-// 
+//
 // This software and the related documents are provided as is, with no express or implied warranties, other than
 // those that are expressly stated in the License.
 //
@@ -14,9 +14,6 @@
 package sensing
 
 import (
-	"context_linux_go/core"
-	"context_linux_go/core/client"
-	"context_linux_go/logger"
 	"errors"
 	"fmt"
 	"os"
@@ -24,7 +21,11 @@ import (
 	"strings"
 	"sync"
 	"time"
+
 	"github.com/gorilla/websocket"
+	"github.impcloud.net/RSP-Inventory-Suite/product-data-service/saf/core"
+	"github.impcloud.net/RSP-Inventory-Suite/product-data-service/saf/core/client"
+	"github.impcloud.net/RSP-Inventory-Suite/product-data-service/saf/logger"
 )
 
 // Sensing integrates all the components of the SDK
@@ -200,17 +201,17 @@ func (sensing *Sensing) Start(options core.SensingOptions) { // nolint: gocyclo
 				if websocket.IsUnexpectedCloseError(wsErr.Error, websocket.CloseNormalClosure, websocket.CloseGoingAway) {
 					for {
 						if sensing.clientInterface.IsConnected() {
-							time.Sleep(time.Duration(options.RetryInterval * 1000) * time.Millisecond)
+							time.Sleep(time.Duration(options.RetryInterval*1000) * time.Millisecond)
 						} else {
 							attemptingReconnectAlready = true
 							attemptingReconnectAlready = sensing.establishConnection(nil)
 							break
 						}
 					}
-				} else if sensing.checkIfConnectionError(wsErr.Error.Error()){
+				} else if sensing.checkIfConnectionError(wsErr.Error.Error()) {
 					for {
 						if sensing.clientInterface.IsConnected() {
-							time.Sleep(time.Duration(options.RetryInterval * 1000) * time.Millisecond)
+							time.Sleep(time.Duration(options.RetryInterval*1000) * time.Millisecond)
 						} else {
 							attemptingReconnectAlready = true
 							attemptingReconnectAlready = sensing.establishConnection(nil)
@@ -260,7 +261,7 @@ func (sensing *Sensing) Stop() {
 }
 
 // Establish WS connection with the provided options
-func (sensing *Sensing) establishConnection(onStartHandler interface{}) bool{
+func (sensing *Sensing) establishConnection(onStartHandler interface{}) bool {
 	err := sensing.clientInterface.EstablishConnection()
 	if err != nil {
 		sensing.logger.Error(err.Error(), nil)

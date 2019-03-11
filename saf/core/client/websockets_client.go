@@ -14,7 +14,6 @@
 package client
 
 import (
-	"context_linux_go/core"
 	"crypto/tls"
 	"crypto/x509"
 	"encoding/json"
@@ -27,9 +26,12 @@ import (
 	"sync"
 	"time"
 
-	logger "context_linux_go/logger"
-	"github.com/gorilla/websocket"
+	"github.impcloud.net/RSP-Inventory-Suite/product-data-service/saf/core"
+
 	"net/http"
+
+	"github.com/gorilla/websocket"
+	logger "github.impcloud.net/RSP-Inventory-Suite/product-data-service/saf/logger"
 )
 
 var contextRPCVersion = core.GetVersion()
