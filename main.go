@@ -28,18 +28,15 @@ import (
 	"sync"
 	"time"
 
-	"github.impcloud.net/RSP-Inventory-Suite/product-data-service/app/mapping"
-
 	"github.com/globalsign/mgo"
-
-	"github.impcloud.net/RSP-Inventory-Suite/product-data-service/saf/core"
-	"github.impcloud.net/RSP-Inventory-Suite/product-data-service/saf/core/sensing"
-
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 	"github.impcloud.net/RSP-Inventory-Suite/product-data-service/app/config"
+	"github.impcloud.net/RSP-Inventory-Suite/product-data-service/app/productdata"
 	"github.impcloud.net/RSP-Inventory-Suite/product-data-service/app/routes"
 	"github.impcloud.net/RSP-Inventory-Suite/product-data-service/pkg/healthcheck"
+	"github.impcloud.net/RSP-Inventory-Suite/product-data-service/saf/core"
+	"github.impcloud.net/RSP-Inventory-Suite/product-data-service/saf/core/sensing"
 	db "github.impcloud.net/Responsive-Retail-Core/mongodb"
 	"github.impcloud.net/Responsive-Retail-Core/utilities/go-metrics"
 	reporter "github.impcloud.net/Responsive-Retail-Core/utilities/go-metrics-influxdb"
@@ -309,7 +306,7 @@ func healthCheck(port string) {
 }
 
 type brokerValue struct {
-	Data []mapping.IncomingData `json:"data"`
+	Data []productdata.IncomingData `json:"data"`
 }
 
 /*
@@ -402,9 +399,9 @@ func dataProcess(jsonBytes []byte, masterDB *db.DB) error {
 	var incomingDataSlice = bv.Data
 
 	// Transform mapping.IncomingData to map of sku -> list of mapping.SKUData
-	prodDataMap := make(map[string]mapping.SKUData)
+	prodDataMap := make(map[string]productdata.SKUData)
 	for _, item := range incomingDataSlice {
-		productData := mapping.ProductData{
+		productData := productdata.ProductData{
 			ProductID:        item.ProductID,
 			Metadata:         item.Metadata,
 			BeingRead:        item.BeingRead,
@@ -416,16 +413,16 @@ func dataProcess(jsonBytes []byte, masterDB *db.DB) error {
 		if repeatSKU {
 			skuData.ProductList = append(skuData.ProductList, productData)
 		} else {
-			skuData = mapping.SKUData{
+			skuData = productdata.SKUData{
 				SKU:         item.SKU,
-				ProductList: []mapping.ProductData{productData},
+				ProductList: []productdata.ProductData{productData},
 			}
 			prodDataMap[item.SKU] = skuData
 		}
 	}
 
 	// extract the values to a list
-	prodDataList := make([]mapping.SKUData, 0, len(prodDataMap))
+	prodDataList := make([]productdata.SKUData, 0, len(prodDataMap))
 	for _, skuData := range prodDataMap {
 		prodDataList = append(prodDataList, skuData)
 	}
@@ -433,7 +430,7 @@ func dataProcess(jsonBytes []byte, masterDB *db.DB) error {
 	copySession := masterDB.CopySession()
 	defer copySession.Close()
 
-	if err := mapping.Insert(copySession, prodDataList); err != nil {
+	if err := productdata.Insert(copySession, prodDataList); err != nil {
 		// Metrics not instrumented as it is handled in the controller.
 		return err
 	}

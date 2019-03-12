@@ -16,7 +16,7 @@
  * Unless otherwise agreed by Intel in writing, you may not remove or alter this notice or any other
  * notice embedded in Materials by Intel or Intel's suppliers or licensors in any way.
  */
-package mapping
+package productdata
 
 import (
 	"net/url"
@@ -26,13 +26,13 @@ import (
 	"github.com/globalsign/mgo"
 	"github.com/globalsign/mgo/bson"
 	"github.com/pkg/errors"
+	"github.impcloud.net/RSP-Inventory-Suite/product-data-service/pkg/web"
 	odata "github.impcloud.net/Responsive-Retail-Core/go-odata/mongo"
 	db "github.impcloud.net/Responsive-Retail-Core/mongodb"
 	"github.impcloud.net/Responsive-Retail-Core/utilities/go-metrics"
-	"github.impcloud.net/RSP-Inventory-Suite/product-data-service/pkg/web"
 )
 
-const mappingCollection = "skus"
+const productDataCollection = "skus"
 
 // Write batch sizes must be between 1 and 1000. For safety, split it into 500 operations per call
 // Because upsert requires a pair of upserting instructions. Use mongoMaxOps = 1000
@@ -77,7 +77,7 @@ func Retrieve(dbs *db.DB, query url.Values, maxSize int) (interface{}, *CountTyp
 	}
 
 	retrieveTimer := time.Now()
-	if err := dbs.Execute(mappingCollection, execFunc); err != nil {
+	if err := dbs.Execute(productDataCollection, execFunc); err != nil {
 		if errors.Cause(err) == odata.ErrInvalidInput {
 			mInputErr.Update(1)
 			return nil, nil, web.InvalidInputError(err)
@@ -111,7 +111,7 @@ func countHandler(dbs *db.DB) (interface{}, *CountType, error) {
 		return odata.ODataCount(collection)
 	}
 
-	if count, err = dbs.ExecuteCount(mappingCollection, execFunc); err != nil {
+	if count, err = dbs.ExecuteCount(productDataCollection, execFunc); err != nil {
 		mCountErr.Update(1)
 		return nil, nil, errors.Wrap(err, "db.mapping.Count()")
 	}
@@ -130,7 +130,7 @@ func inlineCountHandler(dbs *db.DB, isInlineCount []string, object []interface{}
 		return odata.ODataInlineCount(collection)
 	}
 
-	if inlineCount, err = dbs.ExecuteCount(mappingCollection, execInlineCount); err != nil {
+	if inlineCount, err = dbs.ExecuteCount(productDataCollection, execInlineCount); err != nil {
 		mCountErr.Update(1)
 		return nil, nil, errors.Wrap(err, "db.mapping.Count()")
 	}
@@ -150,10 +150,10 @@ func inlineCountHandler(dbs *db.DB, isInlineCount []string, object []interface{}
 
 }
 
-func findAndUpdateSkus(dbs *db.DB, mapping *[]SKUData) error {
+func findAndUpdateSkus(dbs *db.DB, skuData *[]SKUData) error {
 
 	var skusList []string
-	for _, sku := range *mapping {
+	for _, sku := range *skuData {
 		skusList = append(skusList, sku.SKU)
 	}
 
@@ -162,11 +162,11 @@ func findAndUpdateSkus(dbs *db.DB, mapping *[]SKUData) error {
 		return collection.Find(bson.M{"sku": bson.M{"$in": skusList}}).All(&results)
 	}
 
-	if err := dbs.Execute(mappingCollection, execFunc); err != nil {
+	if err := dbs.Execute(productDataCollection, execFunc); err != nil {
 		return err
 	}
 
-	mergeProductList(mapping, &results)
+	mergeProductList(skuData, &results)
 
 	return nil
 }
@@ -215,7 +215,7 @@ func mergeProductList(incoming *[]SKUData, current *[]SKUData) {
 
 // Insert receives a slice of sku mapping and inserts them to the database
 // In case of slice greater than 500 elements, Insert will use a bulk operation in batch of 500
-func Insert(dbs *db.DB, mapping []SKUData) error {
+func Insert(dbs *db.DB, skuData []SKUData) error {
 
 	// Metrics
 	metrics.GetOrRegisterGauge(`Mapping-SKU.Insert.Attempt`, nil).Update(1)
@@ -229,17 +229,17 @@ func Insert(dbs *db.DB, mapping []SKUData) error {
 	startTime := time.Now()
 
 	//Create Bulk upsert interface input
-	skus := make([]interface{}, len(mapping)*2)
+	skus := make([]interface{}, len(skuData)*2)
 
 	// Validate and prepare data into pairs of key,obj
 	keyPairs := 0
 
 	// Find and merge product list with existing data in db
-	if err := findAndUpdateSkus(dbs, &mapping); err != nil {
+	if err := findAndUpdateSkus(dbs, &skuData); err != nil {
 		return err
 	}
 
-	for _, item := range mapping {
+	for _, item := range skuData {
 		// Validate empty sku or productList
 		if item.SKU == "" || len(item.ProductList) == 0 {
 			return web.ValidationError(
@@ -260,7 +260,7 @@ func Insert(dbs *db.DB, mapping []SKUData) error {
 		return collection.Bulk()
 	}
 
-	bulk := dbs.ExecuteBulk(mappingCollection, bulkFunc)
+	bulk := dbs.ExecuteBulk(productDataCollection, bulkFunc)
 	bulk.Unordered()
 
 	// Upsert in batch of 500 due to mongodb 1000 max ops limitation
@@ -313,7 +313,7 @@ func bulkOperation(skus []interface{}, dbs *db.DB, bulk *mgo.Bulk, bulkFunc func
 		// Queue batches of 1000 elements which translates to 500 operations
 		/*
 			TODO: Check with the team on if we want to count each bulk batch upsert success or just success of the entire upsert?
-			I assume that a sigle success would suffice.
+			I assume that a single success would suffice.
 		*/
 		if range2 < len(skus) {
 			bulk.Upsert(skus[range1:range2]...)
@@ -330,7 +330,7 @@ func bulkOperation(skus []interface{}, dbs *db.DB, bulk *mgo.Bulk, bulkFunc func
 		// Flush any queued data
 		// Reinitialize bulk after being flushed
 		bulk = nil
-		bulk = dbs.ExecuteBulk(mappingCollection, bulkFunc)
+		bulk = dbs.ExecuteBulk(productDataCollection, bulkFunc)
 		bulk.Unordered()
 
 		// Break after last batch
@@ -362,7 +362,7 @@ func GetProductMetadata(dbs *db.DB, productId string) (SKUData, error) {
 				"$elemMatch": bson.M{
 					"productId": productId}}}).One(&skuData)
 	}
-	if err := dbs.Execute(mappingCollection, execFunc); err != nil {
+	if err := dbs.Execute(productDataCollection, execFunc); err != nil {
 		if err == mgo.ErrNotFound {
 			mSuccess.Update(1)
 			return SKUData{}, web.NotFoundError()
@@ -384,7 +384,7 @@ func Delete(dbs *db.DB, sku string) error {
 	execFunc := func(collection *mgo.Collection) error {
 		return collection.Remove(bson.M{"sku": sku})
 	}
-	if err := dbs.Execute(mappingCollection, execFunc); err != nil {
+	if err := dbs.Execute(productDataCollection, execFunc); err != nil {
 		if err == mgo.ErrNotFound {
 			mSuccess.Update(1)
 			return web.NotFoundError()

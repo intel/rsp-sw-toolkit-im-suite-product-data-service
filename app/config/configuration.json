@@ -1,9 +1,9 @@
 {
-  "serviceName": "RRP - Mapping Sku Service",
+  "serviceName": "Product data Service",
   "connectionString": "mongodb://127.0.0.1:27017",
   "telemetryEndpoint": "",
   "telemetryDataStoreName": "",
-  "databaseName": "mapping",
+  "databaseName": "productdata",
   "loggingLevel": "debug",
   "contextSdk": "127.0.0.1:8888",
   "secureMode" : false,

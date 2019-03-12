@@ -31,7 +31,7 @@ import (
 	"github.com/sirupsen/logrus"
 	log "github.com/sirupsen/logrus"
 	"github.impcloud.net/RSP-Inventory-Suite/product-data-service/app/config"
-	"github.impcloud.net/RSP-Inventory-Suite/product-data-service/app/mapping"
+	"github.impcloud.net/RSP-Inventory-Suite/product-data-service/app/productdata"
 	"github.impcloud.net/RSP-Inventory-Suite/product-data-service/pkg/web"
 	db "github.impcloud.net/Responsive-Retail-Core/mongodb"
 )
@@ -125,8 +125,8 @@ func TestGetIndex(t *testing.T) {
 		t.Errorf("Unable to create new HTTP request %s", err.Error())
 	}
 	recorder := httptest.NewRecorder()
-	mpp := Mapping{nil, 1000}
-	handler := web.Handler(mpp.Index)
+	mapp := Mapping{nil, 1000}
+	handler := web.Handler(mapp.Index)
 	handler.ServeHTTP(recorder, request)
 	if recorder.Code != http.StatusOK {
 		t.Errorf("Expected 200 response")
@@ -516,7 +516,7 @@ func TestDeleteSKUNotFound(t *testing.T) {
 		t.Errorf("Expected: %d Actual: %d", http.StatusNotFound, testRecorder.Code)
 	}
 }
-func insertSampleProductMetadata(db *db.DB, t *testing.T) []mapping.SKUData {
+func insertSampleProductMetadata(db *db.DB, t *testing.T) []productdata.SKUData {
 	copySession := db.CopySession()
 	defer copySession.Close()
 
@@ -529,13 +529,13 @@ func insertSampleProductMetadata(db *db.DB, t *testing.T) []mapping.SKUData {
 		}
 	]`
 
-	var expectedMappings []mapping.SKUData
+	var expectedMappings []productdata.SKUData
 	err := json.Unmarshal([]byte(JSONSample), &expectedMappings)
 	if err != nil {
 		t.Fatalf("Not able to Unmarshal JSON object: %+v", err)
 	}
 
-	if err := mapping.Insert(copySession, expectedMappings); err != nil {
+	if err := productdata.Insert(copySession, expectedMappings); err != nil {
 		t.Fatalf("Not able to insert into mongodb: %+v", err)
 	}
 

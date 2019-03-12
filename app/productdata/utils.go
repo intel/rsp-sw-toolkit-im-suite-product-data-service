@@ -16,7 +16,7 @@
  * Unless otherwise agreed by Intel in writing, you may not remove or alter this notice or any other
  * notice embedded in Materials by Intel or Intel's suppliers or licensors in any way.
  */
-package mapping
+package productdata
 
 // GroupBySku creates a map of SKUData with sku as key and groups same sku object.
 func GroupBySku(prodDataSlice []SKUData) map[string][]SKUData {

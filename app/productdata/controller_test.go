@@ -16,7 +16,7 @@
  * Unless otherwise agreed by Intel in writing, you may not remove or alter this notice or any other
  * notice embedded in Materials by Intel or Intel's suppliers or licensors in any way.
  */
-package mapping
+package productdata
 
 import (
 	"encoding/json"
@@ -29,9 +29,9 @@ import (
 	"testing"
 	"time"
 
-	db "github.impcloud.net/Responsive-Retail-Core/mongodb"
 	"github.impcloud.net/RSP-Inventory-Suite/product-data-service/app/config"
 	"github.impcloud.net/RSP-Inventory-Suite/product-data-service/pkg/web"
+	db "github.impcloud.net/Responsive-Retail-Core/mongodb"
 )
 
 var dbHost string
@@ -50,8 +50,6 @@ func TestMain(m *testing.M) {
 }
 
 func TestInsertSkuMapping(t *testing.T) {
-	dbName := config.AppConfig.DatabaseName
-	dbHost = config.AppConfig.ConnectionString + "/" + dbName
 
 	masterDb, err := db.NewSession(dbHost, 5*time.Second)
 	if err != nil {
@@ -67,9 +65,6 @@ func TestInsertSkuMapping(t *testing.T) {
 }
 
 func TestInsertDuplicateProductIDsSKUMapping(t *testing.T) {
-
-	dbName := config.AppConfig.DatabaseName
-	dbHost = config.AppConfig.ConnectionString + "/" + dbName
 
 	masterDb, err := db.NewSession(dbHost, 5*time.Second)
 	if err != nil {

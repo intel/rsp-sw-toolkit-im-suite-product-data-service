@@ -16,17 +16,7 @@
  * Unless otherwise agreed by Intel in writing, you may not remove or alter this notice or any other
  * notice embedded in Materials by Intel or Intel's suppliers or licensors in any way.
  */
-package mapping
-
-/*
-// Mapping stores the SKU Mapping
-type Mapping struct {
-	SKU         string   `json:"sku"`
-	Name        string   `json:"name,omitempty"`
-	Description string   `json:"description,omitempty"`
-	ProductList []string `json:"productList"`
-}
-*/
+package productdata
 
 // CountType is used to hold the total count
 type CountType struct {

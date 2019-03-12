@@ -28,7 +28,7 @@ import (
 	"time"
 
 	"github.com/gorilla/mux"
-	"github.impcloud.net/RSP-Inventory-Suite/product-data-service/app/mapping"
+	"github.impcloud.net/RSP-Inventory-Suite/product-data-service/app/productdata"
 	"github.impcloud.net/RSP-Inventory-Suite/product-data-service/pkg/web"
 	db "github.impcloud.net/Responsive-Retail-Core/mongodb"
 	"github.impcloud.net/Responsive-Retail-Core/utilities/go-metrics"
@@ -80,7 +80,7 @@ func (mapp *Mapping) GetSkuMapping(ctx context.Context, writer http.ResponseWrit
 	copySession := mapp.MasterDB.CopySession()
 	defer copySession.Close()
 
-	results, count, err := mapping.Retrieve(copySession, request.URL.Query(), mapp.Size)
+	results, count, err := productdata.Retrieve(copySession, request.URL.Query(), mapp.Size)
 	if err != nil {
 		return web.InvalidInputError(err)
 	}
@@ -112,7 +112,7 @@ func (mapp *Mapping) PostSkuMapping(ctx context.Context, writer http.ResponseWri
 	copySession := mapp.MasterDB.CopySession()
 	defer copySession.Close()
 
-	mappings := mapping.Root{}
+	mappings := productdata.Root{}
 
 	// Reading request with a limit of 32mb
 	body := make([]byte, request.ContentLength)
@@ -122,7 +122,7 @@ func (mapp *Mapping) PostSkuMapping(ctx context.Context, writer http.ResponseWri
 	}
 
 	// Validate JSON schema for mapping SKU service
-	schemaLoader := gojsonschema.NewStringLoader(mapping.Schema)
+	schemaLoader := gojsonschema.NewStringLoader(productdata.Schema)
 	loader := gojsonschema.NewBytesLoader(body)
 
 	// Validate schema
@@ -155,7 +155,7 @@ func (mapp *Mapping) PostSkuMapping(ctx context.Context, writer http.ResponseWri
 		return web.InvalidInputError(err)
 	}
 
-	if err := mapping.Insert(copySession, mappings.Data); err != nil {
+	if err := productdata.Insert(copySession, mappings.Data); err != nil {
 		return err
 	}
 
@@ -183,7 +183,7 @@ func (mapp *Mapping) GetProductID(ctx context.Context, writer http.ResponseWrite
 		return err
 	}
 
-	prodData, err := mapping.GetProductMetadata(copySession, productId)
+	prodData, err := productdata.GetProductMetadata(copySession, productId)
 	if err != nil {
 		if web.IsNotFoundError(err) {
 			mGetProductMetadataErr.Update(1)
@@ -211,7 +211,7 @@ func (mapp *Mapping) DeleteSku(ctx context.Context, writer http.ResponseWriter, 
 	vars := mux.Vars(request)
 	sku := vars["sku"]
 
-	err := mapping.Delete(copySession, sku)
+	err := productdata.Delete(copySession, sku)
 	if err != nil {
 		if web.IsNotFoundError(err) {
 			mDeleteSkuNotFoundErr.Update(1)

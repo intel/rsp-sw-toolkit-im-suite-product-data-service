@@ -3,16 +3,15 @@ module github.impcloud.net/RSP-Inventory-Suite/product-data-service
 go 1.12
 
 require (
-	github.com/globalsign/mgo v0.0.0-20180115174136-896bbb89d212
-	github.com/gorilla/mux v0.0.0-20170228224354-599cba5e7b61
-	github.com/gorilla/websocket v0.0.0-20180306175053-4835f71f2aa5
-	github.com/influxdata/influxdb v0.0.0-20171219185349-4a7361d0317a
-	github.com/pborman/uuid v0.0.0-20170612153648-e790cca94e6c
-	github.com/pkg/errors v0.0.0-20170505043639-c605e284fe17
-	github.com/sirupsen/logrus v0.0.0-20170515105910-5e5dc898656f
+	github.com/globalsign/mgo v0.0.0-20181015135952-eeefdecb41b8
+	github.com/gorilla/mux v1.7.0
+	github.com/gorilla/websocket v1.4.0
+	github.com/influxdata/influxdb v1.7.4 // indirect
+	github.com/influxdata/platform v0.0.0-20190117200541-d500d3cf5589 // indirect
+	github.com/pborman/uuid v1.2.0
+	github.com/pkg/errors v0.8.1
+	github.com/sirupsen/logrus v1.4.0
 	github.impcloud.net/Responsive-Retail-Core/go-odata v0.0.0-20180417174955-15d217d2bfc1
-	github.impcloud.net/Responsive-Retail-Core/mongodb v0.0.0-20180418173906-c35f98d88fbc
-	github.impcloud.net/Responsive-Retail-Core/utilities v0.0.0-20180418171306-0016306a0721
-	golang.org/x/net v0.0.0-20170828231752-66aacef3dd8a
-	golang.org/x/sys v0.0.0-20170529185110-b90f89a1e7a9
+	github.impcloud.net/Responsive-Retail-Core/mongodb v0.0.0-20181120170827-32376b129d19
+	github.impcloud.net/Responsive-Retail-Core/utilities v0.0.0-20190103181243-564719abdd07
 )
