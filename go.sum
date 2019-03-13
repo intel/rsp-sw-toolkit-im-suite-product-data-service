@@ -237,10 +237,10 @@ github.com/xanzy/ssh-agent v0.2.0/go.mod h1:0NyE30eGUDliuLEHJgYte/zncp2zdTStcOnW
 github.com/yudai/gojsondiff v1.0.0/go.mod h1:AY32+k2cwILAkW1fbgxQ5mUmMiZFgLIV+FBNExI05xg=
 github.com/yudai/golcs v0.0.0-20170316035057-ecda9a501e82/go.mod h1:lgjkn3NuSvDfVJdfcVVdX+jpBxNmX4rDAzaS45IcYoM=
 github.com/yudai/pp v2.0.1+incompatible/go.mod h1:PuxR/8QJ7cyCkFp/aUDS+JY727OFEZkTdatxwunjIkc=
+github.impcloud.net/RSP-Inventory-Suite/go-dbWrapper v0.0.0-20190313210115-0b51b1c07cb2 h1:Suh599o2R4D5njGnUjwvF/ueEe7PNmlNIdl3jmJEobY=
+github.impcloud.net/RSP-Inventory-Suite/go-dbWrapper v0.0.0-20190313210115-0b51b1c07cb2/go.mod h1:iDgnkIDY79ntAHcqn3q5xSpTIQ7YG4CyGaVXQw0IFiY=
 github.impcloud.net/RSP-Inventory-Suite/go-odata v0.0.0-20190313205301-6becc242e190 h1:3YOwiuZMaZaYCdvGC2j8++iPkC29ODPqyHOKGZqCtN0=
 github.impcloud.net/RSP-Inventory-Suite/go-odata v0.0.0-20190313205301-6becc242e190/go.mod h1:W1StUG61JDomZkl9hDK36nVks52hlG2bbttQJcTRVFU=
-github.impcloud.net/Responsive-Retail-Core/mongodb v0.0.0-20181120170827-32376b129d19 h1:SAWW0JX2984C6dtPzderg7XhqGLJ4pfRFoH3mFDF9t0=
-github.impcloud.net/Responsive-Retail-Core/mongodb v0.0.0-20181120170827-32376b129d19/go.mod h1:V8Glm8EsZzjw6r/0AFSHs7eD/RI47A0nUzy7xqMpCTI=
 github.impcloud.net/Responsive-Retail-Core/utilities v0.0.0-20190103181243-564719abdd07 h1:AJO2Ncl/aFdqie0pjs677UsTmwt0R3oHr1yXP9G1u9Y=
 github.impcloud.net/Responsive-Retail-Core/utilities v0.0.0-20190103181243-564719abdd07/go.mod h1:dYH6w4NKBPOmWDRgv/pIIu1ZwinQSyu+9N/EgDHKofM=
 go.uber.org/atomic v1.3.2/go.mod h1:gD2HeocX3+yG+ygLZcrzQJaqmWj9AIm7n08wl/qW/PE=

@@ -11,7 +11,7 @@ require (
 	github.com/pborman/uuid v1.2.0
 	github.com/pkg/errors v0.8.1
 	github.com/sirupsen/logrus v1.4.0
+	github.impcloud.net/RSP-Inventory-Suite/go-dbWrapper v0.0.0-20190313210115-0b51b1c07cb2
 	github.impcloud.net/RSP-Inventory-Suite/go-odata v0.0.0-20190313205301-6becc242e190
-	github.impcloud.net/Responsive-Retail-Core/mongodb v0.0.0-20181120170827-32376b129d19
 	github.impcloud.net/Responsive-Retail-Core/utilities v0.0.0-20190103181243-564719abdd07
 )

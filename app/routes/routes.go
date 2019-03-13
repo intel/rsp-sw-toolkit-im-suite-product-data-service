@@ -23,7 +23,7 @@ import (
 
 	"github.com/gorilla/mux"
 
-	db "github.impcloud.net/Responsive-Retail-Core/mongodb"
+	db "github.impcloud.net/RSP-Inventory-Suite/go-dbWrapper"
 	"github.impcloud.net/RSP-Inventory-Suite/product-data-service/app/routes/handlers"
 	"github.impcloud.net/RSP-Inventory-Suite/product-data-service/pkg/middlewares"
 	"github.impcloud.net/RSP-Inventory-Suite/product-data-service/pkg/web"

@@ -28,7 +28,7 @@ import (
 	"github.com/pkg/errors"
 	odata "github.impcloud.net/RSP-Inventory-Suite/go-odata/mongo"
 	"github.impcloud.net/RSP-Inventory-Suite/product-data-service/pkg/web"
-	db "github.impcloud.net/Responsive-Retail-Core/mongodb"
+	db "github.impcloud.net/RSP-Inventory-Suite/go-dbWrapper"
 	"github.impcloud.net/Responsive-Retail-Core/utilities/go-metrics"
 )
 

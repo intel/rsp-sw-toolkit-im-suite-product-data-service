@@ -37,7 +37,7 @@ import (
 	"github.impcloud.net/RSP-Inventory-Suite/product-data-service/pkg/healthcheck"
 	"github.impcloud.net/RSP-Inventory-Suite/product-data-service/saf/core"
 	"github.impcloud.net/RSP-Inventory-Suite/product-data-service/saf/core/sensing"
-	db "github.impcloud.net/Responsive-Retail-Core/mongodb"
+	db "github.impcloud.net/RSP-Inventory-Suite/go-dbWrapper"
 	"github.impcloud.net/Responsive-Retail-Core/utilities/go-metrics"
 	reporter "github.impcloud.net/Responsive-Retail-Core/utilities/go-metrics-influxdb"
 )

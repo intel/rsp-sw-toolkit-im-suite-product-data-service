@@ -24,7 +24,7 @@ import (
 	"testing"
 	"time"
 
-	db "github.impcloud.net/Responsive-Retail-Core/mongodb"
+	db "github.impcloud.net/RSP-Inventory-Suite/go-dbWrapper"
 	"github.impcloud.net/RSP-Inventory-Suite/product-data-service/app/config"
 )
 

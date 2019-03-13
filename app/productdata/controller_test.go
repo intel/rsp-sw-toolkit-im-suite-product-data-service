@@ -31,7 +31,7 @@ import (
 
 	"github.impcloud.net/RSP-Inventory-Suite/product-data-service/app/config"
 	"github.impcloud.net/RSP-Inventory-Suite/product-data-service/pkg/web"
-	db "github.impcloud.net/Responsive-Retail-Core/mongodb"
+	db "github.impcloud.net/RSP-Inventory-Suite/go-dbWrapper"
 )
 
 var dbHost string
