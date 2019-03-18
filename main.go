@@ -31,15 +31,15 @@ import (
 	"github.com/globalsign/mgo"
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
+	db "github.impcloud.net/RSP-Inventory-Suite/go-dbWrapper"
 	"github.impcloud.net/RSP-Inventory-Suite/product-data-service/app/config"
 	"github.impcloud.net/RSP-Inventory-Suite/product-data-service/app/productdata"
 	"github.impcloud.net/RSP-Inventory-Suite/product-data-service/app/routes"
 	"github.impcloud.net/RSP-Inventory-Suite/product-data-service/pkg/healthcheck"
 	"github.impcloud.net/RSP-Inventory-Suite/product-data-service/saf/core"
 	"github.impcloud.net/RSP-Inventory-Suite/product-data-service/saf/core/sensing"
-	db "github.impcloud.net/RSP-Inventory-Suite/go-dbWrapper"
-	"github.impcloud.net/Responsive-Retail-Core/utilities/go-metrics"
-	reporter "github.impcloud.net/Responsive-Retail-Core/utilities/go-metrics-influxdb"
+	"github.impcloud.net/RSP-Inventory-Suite/utilities/go-metrics"
+	reporter "github.impcloud.net/RSP-Inventory-Suite/utilities/go-metrics-influxdb"
 )
 
 const prodDataUrn = "urn:x-intel:context:thing:productmasterdata"

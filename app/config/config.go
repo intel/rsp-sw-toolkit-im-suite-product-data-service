@@ -21,8 +21,8 @@ package config
 import (
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
-	"github.impcloud.net/Responsive-Retail-Core/utilities/configuration"
-	"github.impcloud.net/Responsive-Retail-Core/utilities/helper"
+	"github.impcloud.net/RSP-Inventory-Suite/utilities/configuration"
+	"github.impcloud.net/RSP-Inventory-Suite/utilities/helper"
 )
 
 type (

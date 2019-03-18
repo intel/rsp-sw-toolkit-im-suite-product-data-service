@@ -39,9 +39,3 @@ tasks.json
 product-data-service-*.html
 
 data/
-
-#vendor stuff
-vendor/github.impcloud.net/Responsive-Retail-Core/**/*.md
-vendor/github.impcloud.net/Responsive-Retail-Core/**/vendor/*
-vendor/github.impcloud.net/Responsive-Retail-Core/**/Jenkinsfile
-vendor/github.impcloud.net/Responsive-Retail-Core/utilities/configuration/testData

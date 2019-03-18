@@ -26,10 +26,10 @@ import (
 	"github.com/globalsign/mgo"
 	"github.com/globalsign/mgo/bson"
 	"github.com/pkg/errors"
+	db "github.impcloud.net/RSP-Inventory-Suite/go-dbWrapper"
 	odata "github.impcloud.net/RSP-Inventory-Suite/go-odata/mongo"
 	"github.impcloud.net/RSP-Inventory-Suite/product-data-service/pkg/web"
-	db "github.impcloud.net/RSP-Inventory-Suite/go-dbWrapper"
-	"github.impcloud.net/Responsive-Retail-Core/utilities/go-metrics"
+	"github.impcloud.net/RSP-Inventory-Suite/utilities/go-metrics"
 )
 
 const productDataCollection = "skus"
