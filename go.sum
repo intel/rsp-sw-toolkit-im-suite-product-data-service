@@ -235,6 +235,10 @@ github.com/tv42/httpunix v0.0.0-20150427012821-b75d8614f926/go.mod h1:9ESjWnEqri
 github.com/tylerb/graceful v1.2.15/go.mod h1:LPYTbOYmUTdabwRt0TGhLllQ0MUNbs0Y5q1WXJOI9II=
 github.com/willf/bitset v1.1.9/go.mod h1:RjeCKbqT1RxIR/KWY6phxZiaY1IyutSBfGjNPySAYV4=
 github.com/xanzy/ssh-agent v0.2.0/go.mod h1:0NyE30eGUDliuLEHJgYte/zncp2zdTStcOnWhgSqHD8=
+github.com/xeipuuv/gojsonpointer v0.0.0-20180127040702-4e3ac2762d5f h1:J9EGpcZtP0E/raorCMxlFGSTBrsSlaDGf3jU/qvAE2c=
+github.com/xeipuuv/gojsonpointer v0.0.0-20180127040702-4e3ac2762d5f/go.mod h1:N2zxlSyiKSe5eX1tZViRH5QA0qijqEDrYZiPEAiq3wU=
+github.com/xeipuuv/gojsonreference v0.0.0-20180127040603-bd5ef7bd5415 h1:EzJWgHovont7NscjpAxXsDA8S8BMYve8Y5+7cuRE7R0=
+github.com/xeipuuv/gojsonreference v0.0.0-20180127040603-bd5ef7bd5415/go.mod h1:GwrjFmJcFw6At/Gs6z4yjiIwzuJ1/+UwLxMQDVQXShQ=
 github.com/yudai/gojsondiff v1.0.0/go.mod h1:AY32+k2cwILAkW1fbgxQ5mUmMiZFgLIV+FBNExI05xg=
 github.com/yudai/golcs v0.0.0-20170316035057-ecda9a501e82/go.mod h1:lgjkn3NuSvDfVJdfcVVdX+jpBxNmX4rDAzaS45IcYoM=
 github.com/yudai/pp v2.0.1+incompatible/go.mod h1:PuxR/8QJ7cyCkFp/aUDS+JY727OFEZkTdatxwunjIkc=
@@ -242,6 +246,8 @@ github.impcloud.net/RSP-Inventory-Suite/go-dbWrapper v0.0.0-20190313210115-0b51b
 github.impcloud.net/RSP-Inventory-Suite/go-dbWrapper v0.0.0-20190313210115-0b51b1c07cb2/go.mod h1:iDgnkIDY79ntAHcqn3q5xSpTIQ7YG4CyGaVXQw0IFiY=
 github.impcloud.net/RSP-Inventory-Suite/go-odata v0.0.0-20190313205301-6becc242e190 h1:3YOwiuZMaZaYCdvGC2j8++iPkC29ODPqyHOKGZqCtN0=
 github.impcloud.net/RSP-Inventory-Suite/go-odata v0.0.0-20190313205301-6becc242e190/go.mod h1:W1StUG61JDomZkl9hDK36nVks52hlG2bbttQJcTRVFU=
+github.impcloud.net/RSP-Inventory-Suite/gojsonschema v1.1.0 h1:Mq1xGVv7GKgLKzFW1+AEklnFHMsr1szx+w0Lqv6jaF8=
+github.impcloud.net/RSP-Inventory-Suite/gojsonschema v1.1.0/go.mod h1:AYPR9FhL4F0hJ42MrKJi1uBUIGl6yaPYM0Idd0/E2jw=
 github.impcloud.net/RSP-Inventory-Suite/utilities v0.0.0-20190318223020-7136022498b9 h1:Ube5aC8yTq59sWjwGn0TwyV1fh3po84LQgQYAuHRRgw=
 github.impcloud.net/RSP-Inventory-Suite/utilities v0.0.0-20190318223020-7136022498b9/go.mod h1:WsQsjgVseD1gyLkKs8TNYHObiD3LcwlDBwFoveH6WAA=
 go.uber.org/atomic v1.3.2/go.mod h1:gD2HeocX3+yG+ygLZcrzQJaqmWj9AIm7n08wl/qW/PE=

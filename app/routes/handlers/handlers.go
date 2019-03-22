@@ -29,10 +29,10 @@ import (
 
 	"github.com/gorilla/mux"
 	db "github.impcloud.net/RSP-Inventory-Suite/go-dbWrapper"
+	"github.impcloud.net/RSP-Inventory-Suite/gojsonschema"
 	"github.impcloud.net/RSP-Inventory-Suite/product-data-service/app/productdata"
 	"github.impcloud.net/RSP-Inventory-Suite/product-data-service/pkg/web"
 	"github.impcloud.net/RSP-Inventory-Suite/utilities/go-metrics"
-	"github.impcloud.net/RSP-Inventory-Suite/utilities/gojsonschema"
 )
 
 // Mapping represents the User API method handler set.

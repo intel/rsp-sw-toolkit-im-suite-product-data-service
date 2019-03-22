@@ -11,7 +11,10 @@ require (
 	github.com/pborman/uuid v1.2.0
 	github.com/pkg/errors v0.8.1
 	github.com/sirupsen/logrus v1.4.0
+	github.com/xeipuuv/gojsonpointer v0.0.0-20180127040702-4e3ac2762d5f // indirect
+	github.com/xeipuuv/gojsonreference v0.0.0-20180127040603-bd5ef7bd5415 // indirect
 	github.impcloud.net/RSP-Inventory-Suite/go-dbWrapper v0.0.0-20190313210115-0b51b1c07cb2
 	github.impcloud.net/RSP-Inventory-Suite/go-odata v0.0.0-20190313205301-6becc242e190
+	github.impcloud.net/RSP-Inventory-Suite/gojsonschema v1.1.0
 	github.impcloud.net/RSP-Inventory-Suite/utilities v0.0.0-20190318223020-7136022498b9
 )
