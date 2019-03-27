@@ -39,3 +39,5 @@ tasks.json
 product-data-service-*.html
 
 data/
+
+go.sum
