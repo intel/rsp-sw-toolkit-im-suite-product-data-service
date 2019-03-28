@@ -135,13 +135,20 @@ func (mapp *Mapping) PostSkuMapping(ctx context.Context, writer http.ResponseWri
 	if !result.Valid() {
 		errList := ErrorList{Errors: []ErrReport{}}
 		for _, err := range result.Errors() {
+			// err.Field() is not set for "required" error
+			var field string
+			if property, ok := err.Details()["property"].(string); ok {
+				field = property
+			} else {
+				field = err.Field()
+			}
 			// ignore extraneous "number_one_of" error
 			if err.Type() == "number_one_of" {
 				continue
 			}
 			report := ErrReport{
 				Description: err.Description(),
-				Field:       err.Field(),
+				Field:       field,
 				ErrorType:   err.Type(),
 				Value:       err.Value(),
 			}
