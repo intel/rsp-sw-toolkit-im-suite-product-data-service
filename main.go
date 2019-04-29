@@ -22,9 +22,11 @@ import (
 	"context"
 	"encoding/json"
 	"flag"
+	golog "log"
 	"net/http"
 	"os"
 	"os/signal"
+	"strings"
 	"sync"
 	"time"
 
@@ -46,6 +48,12 @@ const prodDataUrn = "urn:x-intel:context:thing:productmasterdata"
 
 func main() {
 
+	// Ensure simple text format
+	log.SetFormatter(&log.TextFormatter{
+		DisableColors: true,
+		FullTimestamp: true,
+	})
+
 	// Load config variables
 	if err := config.InitConfig(); err != nil {
 		log.WithFields(log.Fields{
@@ -59,6 +67,8 @@ func main() {
 
 	// Initialize metrics reporting
 	initMetrics()
+
+	setLoggingLevel(config.AppConfig.LoggingLevel)
 
 	// Metrics
 	mDbConnection := metrics.GetOrRegisterGauge(`Mapping-SKU.Main.DB-Connection`, nil)
@@ -459,4 +469,22 @@ func initMetrics() {
 			nil,
 		)
 	}
+}
+
+func setLoggingLevel(loggingLevel string) {
+	switch strings.ToLower(loggingLevel) {
+	case "error":
+		log.SetLevel(log.ErrorLevel)
+	case "warn":
+		log.SetLevel(log.WarnLevel)
+	case "info":
+		log.SetLevel(log.InfoLevel)
+	case "debug":
+		log.SetLevel(log.DebugLevel)
+	default:
+		log.SetLevel(log.InfoLevel)
+	}
+
+	// Not using filtered func (Info, etc ) so that message is always logged
+	golog.Printf("Logging level set to %s\n", loggingLevel)
 }
