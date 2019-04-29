@@ -11,6 +11,6 @@ require (
 	github.com/sirupsen/logrus v1.4.0
 	github.impcloud.net/RSP-Inventory-Suite/go-dbWrapper v0.0.0-20190313210115-0b51b1c07cb2
 	github.impcloud.net/RSP-Inventory-Suite/go-odata v0.0.0-20190313205301-6becc242e190
-	github.impcloud.net/RSP-Inventory-Suite/gojsonschema v1.1.1-0.20190322221515-3f0f65a31086
+	github.impcloud.net/RSP-Inventory-Suite/gojsonschema v0.0.0-20190328202319-524e56ea9f9a
 	github.impcloud.net/RSP-Inventory-Suite/utilities v0.0.0-20190318223020-7136022498b9
 )
