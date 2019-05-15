@@ -6,7 +6,7 @@ RUN echo http://nl.alpinelinux.org/alpine/v3.6/main > /etc/apk/repositories; \
     echo http://nl.alpinelinux.org/alpine/v3.6/community >> /etc/apk/repositories
 
 RUN apk update && \
-    apk add --no-cache git
+    apk add --no-cache git bash
 
 # Authentication needed to pull git modules from github.impcloud.net
 RUN git config --global credential.helper store
