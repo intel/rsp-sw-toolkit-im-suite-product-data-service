@@ -21,6 +21,7 @@ package main
 import (
 	"log"
 	"os"
+	"strconv"
 	"testing"
 	"time"
 
@@ -48,8 +49,8 @@ func TestDataProcess(t *testing.T) {
 	masterDb := createDB(t)
 	defer masterDb.Close()
 
-	JSONSample := []byte(`{ 
-				"data": [
+	JSONSample := []byte(`
+				 [
 							{
 								"sku": "12345678",
 								"upc": "123456789789",
@@ -80,9 +81,7 @@ func TestDataProcess(t *testing.T) {
 									"size":"M"
 								}
 							}
-						],
-				"sent_on": 1501872400247
-  }`)
+						]`)
 
 	if err := dataProcess(JSONSample, masterDb); err != nil {
 		t.Fatalf("error processing product data: %+v", err)
@@ -96,4 +95,21 @@ func createDB(t *testing.T) *db.DB {
 	}
 
 	return masterDb
+}
+
+func TestParseEvent(t *testing.T) {
+
+	timestamp := 1471806386919
+
+	eventStr := `{"origin":` + strconv.Itoa(timestamp) + `,
+	"device":"rrs-gateway",
+	"readings":[ {"name" : "gwevent", "value": " " } ] 
+   }`
+
+	event := parseEvent(eventStr)
+
+	if event.Device != "rrs-gateway" || event.Origin != int64(timestamp) {
+		t.Error("Error parsing edgex event")
+	}
+
 }
