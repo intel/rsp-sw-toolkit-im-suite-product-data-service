@@ -121,8 +121,6 @@ func main() {
 		}).Error(err.Error())
 	}
 
-	//skipSAF, ok := os.LookupEnv("skipSAF")
-	// Connect to EdgeX zeroMQ bus
 	receiveZmqEvents(masterDB)
 
 	// Initiate webserver and routes
