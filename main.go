@@ -20,6 +20,7 @@ package main
 
 import (
 	"context"
+	"encoding/base64"
 	"encoding/json"
 	"flag"
 	"fmt"
@@ -427,9 +428,18 @@ func receiveZmqEvents(masterDB *db.DB) {
 
 					if read.Name == "SKU_data" {
 
-						if err := dataProcess([]byte(read.Value), masterDB); err != nil {
+						data, err := base64.StdEncoding.DecodeString(read.Value)
+						if err != nil {
 							log.WithFields(log.Fields{
-								"Method": "main",
+								"Method": "receiveZmqEvents",
+								"Action": "product data ingestion",
+								"Error":  err.Error(),
+							}).Error("error decoding base64 value")
+						}
+
+						if err := dataProcess(data, masterDB); err != nil {
+							log.WithFields(log.Fields{
+								"Method": "receiveZmqEvents",
 								"Action": "product data ingestion",
 								"Error":  err.Error(),
 							}).Error("error processing product data")
