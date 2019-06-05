@@ -421,7 +421,7 @@ func receiveZmqEvents(masterDB *db.DB) {
 			for _, str := range msg {
 				event := parseEvent(str)
 
-				if event.Device != config.AppConfig.DeviceName {
+				if event.Device != "SKU_Data_Device" {
 					continue
 				}
 				for _, read := range event.Readings {

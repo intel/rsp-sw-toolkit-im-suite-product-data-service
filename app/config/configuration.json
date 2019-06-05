@@ -6,7 +6,6 @@
   "databaseName": "productdata",
   "loggingLevel": "debug",
   "zeroMQ": "127.0.0.1:5563",
-  "deviceName": "SKU_Data_Device",
   "secureMode" : false,
   "skipCertVerify" : false,
   "port": "8081",
