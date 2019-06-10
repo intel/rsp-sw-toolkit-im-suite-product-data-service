@@ -426,26 +426,28 @@ func receiveZmqEvents(masterDB *db.DB) {
 				}
 				for _, read := range event.Readings {
 
-					if read.Name == "SKU_data" {
-
-						data, err := base64.StdEncoding.DecodeString(read.Value)
-						if err != nil {
-							log.WithFields(log.Fields{
-								"Method": "receiveZmqEvents",
-								"Action": "product data ingestion",
-								"Error":  err.Error(),
-							}).Error("error decoding base64 value")
-						}
-
-						if err := dataProcess(data, masterDB); err != nil {
-							log.WithFields(log.Fields{
-								"Method": "receiveZmqEvents",
-								"Action": "product data ingestion",
-								"Error":  err.Error(),
-							}).Error("error processing product data")
-						}
-
+					if read.Name != "SKU_data" {
+						continue
 					}
+
+					data, err := base64.StdEncoding.DecodeString(read.Value)
+					if err != nil {
+						log.WithFields(log.Fields{
+							"Method": "receiveZmqEvents",
+							"Action": "product data ingestion",
+							"Error":  err.Error(),
+						}).Error("error decoding base64 value")
+						continue
+					}
+
+					if err := dataProcess(data, masterDB); err != nil {
+						log.WithFields(log.Fields{
+							"Method": "receiveZmqEvents",
+							"Action": "product data ingestion",
+							"Error":  err.Error(),
+						}).Error("error processing product data")
+					}
+
 				}
 
 			}

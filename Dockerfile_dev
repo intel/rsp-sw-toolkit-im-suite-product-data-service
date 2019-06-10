@@ -7,8 +7,7 @@ RUN echo http://nl.alpinelinux.org/alpine/v3.6/main > /etc/apk/repositories; \
 
 RUN apk update && apk add zeromq zeromq-dev libsodium-dev pkgconfig build-base bash
 
-RUN apk update && \
-    apk add --no-cache linux-headers gcc musl-dev git && \
+RUN apk add --no-cache linux-headers gcc musl-dev git zeromq zeromq-dev libsodium-dev pkgconfig build-base bash && \
     apk add --no-cache \
         --virtual=.build-dependencies &&\
     ln -s locale.h /usr/include/xlocale.h && \
