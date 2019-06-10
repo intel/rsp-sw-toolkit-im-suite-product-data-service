@@ -20,8 +20,10 @@ package main
 
 import (
 	"context"
+	"encoding/base64"
 	"encoding/json"
 	"flag"
+	"fmt"
 	golog "log"
 	"net/http"
 	"os"
@@ -30,16 +32,17 @@ import (
 	"sync"
 	"time"
 
+	"github.com/edgexfoundry/go-mod-core-contracts/models"
 	"github.com/globalsign/mgo"
+	zmq "github.com/pebbe/zmq4"
 	"github.com/pkg/errors"
+	"github.com/sirupsen/logrus"
 	log "github.com/sirupsen/logrus"
 	db "github.impcloud.net/RSP-Inventory-Suite/go-dbWrapper"
 	"github.impcloud.net/RSP-Inventory-Suite/product-data-service/app/config"
 	"github.impcloud.net/RSP-Inventory-Suite/product-data-service/app/productdata"
 	"github.impcloud.net/RSP-Inventory-Suite/product-data-service/app/routes"
 	"github.impcloud.net/RSP-Inventory-Suite/product-data-service/pkg/healthcheck"
-	"github.impcloud.net/RSP-Inventory-Suite/product-data-service/saf/core"
-	"github.impcloud.net/RSP-Inventory-Suite/product-data-service/saf/core/sensing"
 	"github.impcloud.net/RSP-Inventory-Suite/utilities/go-metrics"
 	reporter "github.impcloud.net/RSP-Inventory-Suite/utilities/go-metrics-influxdb"
 )
@@ -119,81 +122,8 @@ func main() {
 		}).Error(err.Error())
 	}
 
-	// Registering to context sensing broker
-	log.WithFields(log.Fields{
-		"Method": "main",
-		"Action": "Start",
-		"Host":   config.AppConfig.ContextSdk,
-	}).Info("Starting Sensing...")
+	receiveZmqEvents(masterDB)
 
-	skipSAF, ok := os.LookupEnv("skipSAF")
-	if ok && skipSAF != "true" {
-		onSensingStarted := make(core.SensingStartedChannel, 1)
-		onSensingError := make(core.ErrorChannel, 1)
-
-		options := core.SensingOptions{
-			Server:                      config.AppConfig.ContextSdk,
-			Publish:                     true,
-			Secure:                      config.AppConfig.SecureMode,
-			Application:                 config.AppConfig.ServiceName,
-			OnStarted:                   onSensingStarted,
-			OnError:                     onSensingError,
-			Retries:                     10,
-			RetryInterval:               1,
-			SkipCertificateVerification: config.AppConfig.SkipCertVerify,
-		}
-
-		sensingSdk := sensing.NewSensing()
-		sensingSdk.Start(options)
-
-		go func(options core.SensingOptions) {
-			onProdDataItem := make(core.ProviderItemChannel)
-
-			for {
-
-				select {
-				case started := <-options.OnStarted:
-					if !started.Started {
-						log.WithFields(log.Fields{
-							"Method": "main",
-							"Action": "connecting to context broker",
-							"Host":   config.AppConfig.ContextSdk,
-						}).Fatal("sensing has failed to start")
-					}
-
-					log.Info("Sensing has started")
-					sensingSdk.AddContextTypeListener("*:*", prodDataUrn, &onProdDataItem, &onSensingError)
-					log.Info("Waiting for data...")
-
-				case prodDataItem := <-onProdDataItem:
-					// if ItemData.Value were json.RawMessage instead of interface{}, it would
-					// be unnecessary to perform this bizarre and costly json round-tripping
-					go func(prodDataItem *core.ItemData) {
-						var err error
-						jsonBytes, err := json.Marshal(prodDataItem.Value)
-						if err != nil {
-							log.Errorf("Unable to Marshal data")
-						}
-						if err := dataProcess(jsonBytes, masterDB); err != nil {
-							log.WithFields(log.Fields{
-								"Method": "main",
-								"Action": "product data ingestion",
-								"Error":  err.Error(),
-							}).Error("error processing product data")
-						}
-					}(prodDataItem)
-
-				case err := <-options.OnError:
-					log.WithFields(log.Fields{
-						"Method": "main",
-						"Action": "Receiving sensing error exiting",
-					}).Fatal(err)
-				}
-
-			}
-
-		}(options)
-	}
 	// Initiate webserver and routes
 	startWebServer(masterDB, config.AppConfig.Port, config.AppConfig.ResponseLimit, config.AppConfig.ServiceName)
 
@@ -315,10 +245,6 @@ func healthCheck(port string) {
 
 }
 
-type brokerValue struct {
-	Data []productdata.IncomingData `json:"data"`
-}
-
 /*
 dataProcess takes incoming product data and formats the data into
 a JSON object that we can consume and use.
@@ -401,12 +327,13 @@ func dataProcess(jsonBytes []byte, masterDB *db.DB) error {
 	startTime := time.Now()
 
 	log.Debugf("Received data:\n%s", string(jsonBytes))
-	var bv brokerValue
+
+	var bv []productdata.IncomingData
 	if err := json.Unmarshal(jsonBytes, &bv); err != nil {
 		mUnmarshalErr.Update(1)
 		return errors.Wrap(err, "unmarshal failed")
 	}
-	var incomingDataSlice = bv.Data
+	var incomingDataSlice = bv
 
 	// Transform mapping.IncomingData to map of sku -> list of mapping.SKUData
 	prodDataMap := make(map[string]productdata.SKUData)
@@ -469,6 +396,75 @@ func initMetrics() {
 			nil,
 		)
 	}
+}
+
+func receiveZmqEvents(masterDB *db.DB) {
+
+	go func() {
+		q, _ := zmq.NewSocket(zmq.SUB)
+		defer q.Close()
+		uri := fmt.Sprintf("%s://%s", "tcp", config.AppConfig.ZeroMQ)
+		if err := q.Connect(uri); err != nil {
+			logrus.Error(err)
+		}
+		logrus.Infof("Connected to 0MQ at %s", uri)
+		// Edgex Delhi release uses no topic for all sensor data
+		q.SetSubscribe("")
+
+		for {
+			msg, err := q.RecvMessage(0)
+			if err != nil {
+				id, _ := q.GetIdentity()
+				logrus.Error(fmt.Sprintf("Error getting message %s", id))
+				continue
+			}
+			for _, str := range msg {
+				event := parseEvent(str)
+
+				if event.Device != "SKU_Data_Device" {
+					continue
+				}
+				for _, read := range event.Readings {
+
+					if read.Name != "SKU_data" {
+						continue
+					}
+
+					data, err := base64.StdEncoding.DecodeString(read.Value)
+					if err != nil {
+						log.WithFields(log.Fields{
+							"Method": "receiveZmqEvents",
+							"Action": "product data ingestion",
+							"Error":  err.Error(),
+						}).Error("error decoding base64 value")
+						continue
+					}
+
+					if err := dataProcess(data, masterDB); err != nil {
+						log.WithFields(log.Fields{
+							"Method": "receiveZmqEvents",
+							"Action": "product data ingestion",
+							"Error":  err.Error(),
+						}).Error("error processing product data")
+					}
+
+				}
+
+			}
+
+		}
+	}()
+}
+
+func parseEvent(str string) *models.Event {
+	event := models.Event{}
+
+	if err := json.Unmarshal([]byte(str), &event); err != nil {
+		logrus.Error(err.Error())
+		logrus.Warn("Failed to parse event")
+		return nil
+	}
+	return &event
 }
 
 func setLoggingLevel(loggingLevel string) {

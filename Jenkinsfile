@@ -6,6 +6,7 @@ rrpBuildGoCode {
     buildImage = 'amr-registry.caas.intel.com/rrp/ci-go-build-image:1.12.0-alpine'
     dockerImageName = "rrs/${projectKey}"
     protexProjectName = 'bb-product-data-service'
+    customBuildScript = "./build.sh"
 
     infra = [
         stackName: 'RSP-Codepipeline-ProductDataService'
