@@ -1,9 +1,9 @@
 {
   "serviceName": "Product data Service",
-  "connectionString": "mongodb://127.0.0.1:27017",
+  "connectionString": "127.0.0.1",
   "telemetryEndpoint": "",
   "telemetryDataStoreName": "",
-  "databaseName": "productdata",
+  "databaseName": "postgres",
   "loggingLevel": "debug",
   "zeroMQ": "127.0.0.1:5563",
   "secureMode" : false,

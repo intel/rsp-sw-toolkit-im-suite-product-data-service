@@ -33,21 +33,33 @@ import (
 	"time"
 
 	"github.com/edgexfoundry/go-mod-core-contracts/models"
-	"github.com/globalsign/mgo"
+	"github.com/jmoiron/sqlx"
 	zmq "github.com/pebbe/zmq4"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 	log "github.com/sirupsen/logrus"
-	db "github.impcloud.net/RSP-Inventory-Suite/go-dbWrapper"
 	"github.impcloud.net/RSP-Inventory-Suite/product-data-service/app/config"
 	"github.impcloud.net/RSP-Inventory-Suite/product-data-service/app/productdata"
 	"github.impcloud.net/RSP-Inventory-Suite/product-data-service/app/routes"
+	"github.impcloud.net/RSP-Inventory-Suite/product-data-service/pkg/database"
 	"github.impcloud.net/RSP-Inventory-Suite/product-data-service/pkg/healthcheck"
 	"github.impcloud.net/RSP-Inventory-Suite/utilities/go-metrics"
 	reporter "github.impcloud.net/RSP-Inventory-Suite/utilities/go-metrics-influxdb"
 )
 
-const prodDataUrn = "urn:x-intel:context:thing:productmasterdata"
+const schema = `
+CREATE TABLE IF NOT EXISTS skus (
+	sku text,
+	productlist JSONB,
+	PRIMARY KEY (sku)
+);
+
+CREATE INDEX IF NOT EXISTS idx_sku 
+ON skus(sku);
+
+CREATE INDEX IF NOT EXISTS idx_upc 
+ON skus ((productlist->'upc'));
+`
 
 func main() {
 
@@ -74,63 +86,48 @@ func main() {
 	setLoggingLevel(config.AppConfig.LoggingLevel)
 
 	// Metrics
-	mDbConnection := metrics.GetOrRegisterGauge(`Mapping-SKU.Main.DB-Connection`, nil)
-	mDbErr := metrics.GetOrRegisterGauge(`Mapping-SKU.Main.DB-Error`, nil)
-	mIndexErr := metrics.GetOrRegisterGauge(`Mapping-SKU.Main.Index-Error`, nil)
+	mDbConnection := metrics.GetOrRegisterGauge(`Product-Data.Main.DB-Connection`, nil)
+	mDbErr := metrics.GetOrRegisterGauge(`Product-Data.Main.DB-Error`, nil)
 
-	if config.AppConfig.LoggingLevel == "debug" {
-		log.SetLevel(log.DebugLevel)
-	} else {
-		log.SetFormatter(&log.JSONFormatter{})
-	}
+	log.WithFields(log.Fields{"Method": "main", "Action": "Start"}).Info("Starting application...")
 
-	log.WithFields(log.Fields{
-		"Method": "main",
-		"Action": "Start",
-	}).Info("Starting application...")
+	////////////////////////
+	// Connect to PostgreSQL
+	///////////////////////
 
-	dbName := config.AppConfig.DatabaseName
-	dbHost := config.AppConfig.ConnectionString + "/" + dbName
+	log.WithFields(log.Fields{"Method": "main", "Action": "Start"}).Info("Connecting to database...")
 
-	// Connect to mongodb
-	log.WithFields(log.Fields{
-		"Method": "main",
-		"Action": "Start",
-		"Host":   dbName,
-	}).Info("Registering a new master db...")
+	db, err := database.Open(database.Config{
+		User:     "postgres",
+		Password: "example",
+		Host:     config.AppConfig.ConnectionString,
+		DbName:   config.AppConfig.DatabaseName,
+	})
 	mDbConnection.Update(1)
-
-	masterDB, err := db.NewSession(dbHost, 5*time.Second)
 
 	if err != nil {
 		mDbErr.Update(1)
 		log.WithFields(log.Fields{
 			"Method":  "main",
-			"Action":  "Start db",
+			"Action":  "Start database",
 			"Message": err.Error(),
-		}).Fatal("Unable to register a new master db.")
+		}).Fatal("Unable to connect to database.")
 	}
-	// Close master db
-	defer masterDB.Close()
+	defer db.Close()
 
-	// Prepares database indexes
-	if err := prepareDB(masterDB); err != nil {
-		mIndexErr.Update(1)
-		log.WithFields(log.Fields{
-			"Method": "config.PrepareDB",
-			"Action": "Create indexes",
-		}).Error(err.Error())
-	}
+	// Prepares database schema and indexes
+	db.MustExec(schema)
 
-	receiveZmqEvents(masterDB)
+	// Receive data from EdgeX core data
+	receiveZmqEvents(db)
 
 	// Initiate webserver and routes
-	startWebServer(masterDB, config.AppConfig.Port, config.AppConfig.ResponseLimit, config.AppConfig.ServiceName)
+	startWebServer(db, config.AppConfig.Port, config.AppConfig.ResponseLimit, config.AppConfig.ServiceName)
 
 	log.WithField("Method", "main").Info("Completed.")
 }
 
-func startWebServer(masterDB *db.DB, port string, responseLimit int, serviceName string) {
+func startWebServer(masterDB *sqlx.DB, port string, responseLimit int, serviceName string) {
 
 	// Start Webserver and pass additional data
 	router := routes.NewRouter(masterDB, responseLimit)
@@ -190,47 +187,6 @@ func startWebServer(masterDB *db.DB, port string, responseLimit int, serviceName
 
 	// Wait for the listener to report it is closed.
 	wg.Wait()
-}
-
-// PrepareDB prepares the database with indexes
-func prepareDB(dbs *db.DB) error {
-
-	copySession := dbs.CopySession()
-	defer copySession.Close()
-
-	indexes := make(map[string][]mgo.Index)
-
-	indexes["skus"] = []mgo.Index{
-		{
-			Key:        []string{"sku"},
-			Unique:     false,
-			DropDups:   false,
-			Background: false,
-		},
-		{
-			Key:        []string{"productList.productId"},
-			Unique:     false,
-			DropDups:   false,
-			Background: false,
-		},
-	}
-	for collectionName, indexes := range indexes {
-
-		for _, index := range indexes {
-			execFunc := func(collection *mgo.Collection) error {
-				return collection.EnsureIndex(index)
-			}
-			if err := copySession.Execute(collectionName, execFunc); err != nil {
-				return errors.Wrapf(err, "Unable to add Index %s to collection %s", index.Name, collectionName)
-			}
-		}
-	}
-	log.WithFields(log.Fields{
-		"Method": "config.PrepareDB",
-		"Action": "Start",
-	}).Info("Prepared database indexes...")
-
-	return nil
 }
 
 func healthCheck(port string) {
@@ -311,12 +267,12 @@ We will transform the data into the following format:
 ]
 
 */
-func dataProcess(jsonBytes []byte, masterDB *db.DB) error {
+func dataProcess(jsonBytes []byte, masterDB *sqlx.DB) error {
 	// Metrics
-	metrics.GetOrRegisterGauge(`Mapping-SKU.dataProcess.Attempt`, nil).Update(1)
-	mUnmarshalErr := metrics.GetOrRegisterGauge("Mapping-SKU.dataProcess.Unmarshal-Error", nil)
-	mMappingSkuCount := metrics.GetOrRegisterGaugeCollection("Mapping-SKU.dataProcess.MappingData-SKU-Count", nil)
-	mTotalLatency := metrics.GetOrRegisterTimer(`Mapping-SKU.dataProcess.Total-Latency`, nil)
+	metrics.GetOrRegisterGauge(`Product-Data.dataProcess.Attempt`, nil).Update(1)
+	mUnmarshalErr := metrics.GetOrRegisterGauge("Product-Data.dataProcess.Unmarshal-Error", nil)
+	mMappingSkuCount := metrics.GetOrRegisterGaugeCollection("Product-Data.dataProcess.MappingData-SKU-Count", nil)
+	mTotalLatency := metrics.GetOrRegisterTimer(`Product-Data.dataProcess.Total-Latency`, nil)
 	/*
 		TODO: Check with team on need to total latency.
 		Per Instrumentation Guidance: Collect a timer for CPU intensive operations.
@@ -364,10 +320,7 @@ func dataProcess(jsonBytes []byte, masterDB *db.DB) error {
 		prodDataList = append(prodDataList, skuData)
 	}
 
-	copySession := masterDB.CopySession()
-	defer copySession.Close()
-
-	if err := productdata.Insert(copySession, prodDataList); err != nil {
+	if err := productdata.Insert(masterDB, prodDataList); err != nil {
 		// Metrics not instrumented as it is handled in the controller.
 		return err
 	}
@@ -398,7 +351,7 @@ func initMetrics() {
 	}
 }
 
-func receiveZmqEvents(masterDB *db.DB) {
+func receiveZmqEvents(masterDB *sqlx.DB) {
 
 	go func() {
 		q, _ := zmq.NewSocket(zmq.SUB)

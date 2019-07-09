@@ -22,8 +22,8 @@ import (
 	"net/http"
 
 	"github.com/gorilla/mux"
+	"github.com/jmoiron/sqlx"
 
-	db "github.impcloud.net/RSP-Inventory-Suite/go-dbWrapper"
 	"github.impcloud.net/RSP-Inventory-Suite/product-data-service/app/routes/handlers"
 	"github.impcloud.net/RSP-Inventory-Suite/product-data-service/pkg/middlewares"
 	"github.impcloud.net/RSP-Inventory-Suite/product-data-service/pkg/web"
@@ -38,7 +38,7 @@ type Route struct {
 }
 
 // NewRouter creates the routes for GET and POST
-func NewRouter(masterDB *db.DB, size int) *mux.Router {
+func NewRouter(masterDB *sqlx.DB, size int) *mux.Router {
 
 	mapp := handlers.Mapping{MasterDB: masterDB, Size: size}
 

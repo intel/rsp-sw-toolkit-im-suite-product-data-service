@@ -124,7 +124,7 @@ type SKUData struct {
 // ProductData models the product's attributes
 type ProductData struct {
 	// ProductID is the "formal" ID for a product, often a GTIN
-	ProductID        string  `json:"productId" bson:"productId"`
+	ProductID        string  `json:"upc" bson:"upc"`
 	BeingRead        float64 `json:"beingRead" bson:"beingRead"`
 	BecomingReadable float64 `json:"becomingReadable" bson:"becomingReadable"`
 	ExitError        float64 `json:"exitError" bson:"exitError"`

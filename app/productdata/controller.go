@@ -19,33 +19,33 @@
 package productdata
 
 import (
+	"database/sql"
 	"net/url"
-	"strconv"
 	"time"
 
 	"github.com/globalsign/mgo"
 	"github.com/globalsign/mgo/bson"
+	"github.com/jmoiron/sqlx"
 	"github.com/pkg/errors"
 	db "github.impcloud.net/RSP-Inventory-Suite/go-dbWrapper"
-	odata "github.impcloud.net/RSP-Inventory-Suite/go-odata/mongo"
 	"github.impcloud.net/RSP-Inventory-Suite/product-data-service/pkg/web"
 	"github.impcloud.net/RSP-Inventory-Suite/utilities/go-metrics"
 )
 
-const productDataCollection = "skus"
+const productDataTable = "skus"
 
 // Write batch sizes must be between 1 and 1000. For safety, split it into 500 operations per call
 // Because upsert requires a pair of upserting instructions. Use mongoMaxOps = 1000
 const mongoMaxOps = 1000
 
 // Retrieve gets the data out of the DB
-func Retrieve(dbs *db.DB, query url.Values, maxSize int) (interface{}, *CountType, error) {
+func Retrieve(dbs *sqlx.DB, query url.Values, maxSize int) (interface{}, *CountType, error) {
 	// Metrics
 	metrics.GetOrRegisterGauge(`Mapping-SKU.Retrieve.Attempt`, nil).Update(1)
-	mSuccess := metrics.GetOrRegisterGauge(`Mapping-SKU.Retrieve.Success`, nil)
-	mRetrieveErr := metrics.GetOrRegisterGauge("Mapping-SKU.Retrieve.Retrieve-Error", nil)
-	mInputErr := metrics.GetOrRegisterGauge("Mapping-SKU.Retrieve.Input-Error", nil)
-	mRetrieveLatency := metrics.GetOrRegisterTimer(`Mapping-SKU.Retrieve.Retrieve-Latency`, nil)
+	// mSuccess := metrics.GetOrRegisterGauge(`Mapping-SKU.Retrieve.Success`, nil)
+	// mRetrieveErr := metrics.GetOrRegisterGauge("Mapping-SKU.Retrieve.Retrieve-Error", nil)
+	// mInputErr := metrics.GetOrRegisterGauge("Mapping-SKU.Retrieve.Input-Error", nil)
+	// mRetrieveLatency := metrics.GetOrRegisterTimer(`Mapping-SKU.Retrieve.Retrieve-Latency`, nil)
 
 	count := query["$count"]
 
@@ -55,102 +55,109 @@ func Retrieve(dbs *db.DB, query url.Values, maxSize int) (interface{}, *CountTyp
 	}
 
 	// Apply size limit if needed
-	if len(query["$top"]) > 0 {
+	// if len(query["$top"]) > 0 {
 
-		topVal, err := strconv.Atoi(query["$top"][0])
-		if err != nil {
-			return nil, nil, web.ValidationError("invalid $top value")
-		}
+	// 	topVal, err := strconv.Atoi(query["$top"][0])
+	// 	if err != nil {
+	// 		return nil, nil, web.ValidationError("invalid $top value")
+	// 	}
 
-		if topVal > maxSize {
-			query["$top"][0] = strconv.Itoa(maxSize)
-		}
+	// 	if topVal > maxSize {
+	// 		query["$top"][0] = strconv.Itoa(maxSize)
+	// 	}
 
-	} else {
-		query["$top"] = []string{strconv.Itoa(maxSize)} // Apply size limit to the odata query
-	}
+	// } else {
+	// 	query["$top"] = []string{strconv.Itoa(maxSize)} // Apply size limit to the odata query
+	// }
 
 	var object []interface{}
-	// Else, run filter query and return slice of Mapping
-	execFunc := func(collection *mgo.Collection) error {
-		return odata.ODataQuery(query, &object, collection)
-	}
+	// // Else, run filter query and return slice of Mapping
+	// execFunc := func(collection *mgo.Collection) error {
+	// 	return odata.ODataQuery(query, &object, collection)
+	// }
 
-	retrieveTimer := time.Now()
-	if err := dbs.Execute(productDataCollection, execFunc); err != nil {
-		if errors.Cause(err) == odata.ErrInvalidInput {
-			mInputErr.Update(1)
-			return nil, nil, web.InvalidInputError(err)
+	// retrieveTimer := time.Now()
+	// if err := dbs.Execute(productDataTable, execFunc); err != nil {
+	// 	if errors.Cause(err) == odata.ErrInvalidInput {
+	// 		mInputErr.Update(1)
+	// 		return nil, nil, web.InvalidInputError(err)
+	// 	}
+	// 	mRetrieveErr.Update(1)
+	// 	return nil, nil, errors.Wrap(err, "db.mapping.Find()")
+	// }
+	// mRetrieveLatency.Update(time.Since(retrieveTimer))
+
+	// // Check if inlinecount is set
+	// isInlineCount := query["$inlinecount"]
+
+	// if len(count) > 0 || (len(isInlineCount) > 0 && isInlineCount[0] == "allpages") {
+	// 	return inlineCountHandler(dbs, isInlineCount, object)
+	// }
+
+	const q = `SELECT
+			* from skus`
+
+	if err := dbs.Select(&object, q); err != nil {
+		if err == sql.ErrNoRows {
+			return nil, nil, web.NotFoundError()
 		}
-		mRetrieveErr.Update(1)
-		return nil, nil, errors.Wrap(err, "db.mapping.Find()")
-	}
-	mRetrieveLatency.Update(time.Since(retrieveTimer))
 
-	// Check if inlinecount is set
-	isInlineCount := query["$inlinecount"]
-
-	if len(count) > 0 || (len(isInlineCount) > 0 && isInlineCount[0] == "allpages") {
-		return inlineCountHandler(dbs, isInlineCount, object)
+		return nil, nil, errors.Wrap(err, "selecting single product")
 	}
 
-	mSuccess.Update(1)
+	// mSuccess.Update(1)
 	return object, nil, nil
 
 }
 
-func countHandler(dbs *db.DB) (interface{}, *CountType, error) {
+func countHandler(dbs *sqlx.DB) (interface{}, *CountType, error) {
 
 	mCountErr := metrics.GetOrRegisterGauge("Mapping-SKU.Retrieve.Count-Error", nil)
 	mSuccess := metrics.GetOrRegisterGauge(`Mapping-SKU.Retrieve.Success`, nil)
 
 	var count int
-	var err error
 
-	execFunc := func(collection *mgo.Collection) (int, error) {
-		return odata.ODataCount(collection)
-	}
-
-	if count, err = dbs.ExecuteCount(productDataCollection, execFunc); err != nil {
+	err := dbs.Get(&count, "SELECT count(*) FROM skus")
+	if err != nil {
 		mCountErr.Update(1)
-		return nil, nil, errors.Wrap(err, "db.mapping.Count()")
+		return nil, nil, errors.Wrap(err, "count(*)")
 	}
 	mSuccess.Update(1)
 	return nil, &CountType{Count: count}, nil
 }
 
-func inlineCountHandler(dbs *db.DB, isInlineCount []string, object []interface{}) (interface{}, *CountType, error) {
-	mCountErr := metrics.GetOrRegisterGauge("Mapping-SKU.Retrieve.Count-Error", nil)
-	mSuccess := metrics.GetOrRegisterGauge(`Mapping-SKU.Retrieve.Success`, nil)
-	var inlineCount int
-	var err error
+// func inlineCountHandler(dbs *db.DB, isInlineCount []string, object []interface{}) (interface{}, *CountType, error) {
+// 	mCountErr := metrics.GetOrRegisterGauge("Mapping-SKU.Retrieve.Count-Error", nil)
+// 	mSuccess := metrics.GetOrRegisterGauge(`Mapping-SKU.Retrieve.Success`, nil)
+// 	var inlineCount int
+// 	var err error
 
-	// Get count from filtered data
-	execInlineCount := func(collection *mgo.Collection) (int, error) {
-		return odata.ODataInlineCount(collection)
-	}
+// 	// Get count from filtered data
+// 	execInlineCount := func(collection *mgo.Collection) (int, error) {
+// 		return odata.ODataInlineCount(collection)
+// 	}
 
-	if inlineCount, err = dbs.ExecuteCount(productDataCollection, execInlineCount); err != nil {
-		mCountErr.Update(1)
-		return nil, nil, errors.Wrap(err, "db.mapping.Count()")
-	}
+// 	if inlineCount, err = dbs.ExecuteCount(productDataTable, execInlineCount); err != nil {
+// 		mCountErr.Update(1)
+// 		return nil, nil, errors.Wrap(err, "db.mapping.Count()")
+// 	}
 
-	// if $inlinecount is set, return results and inlinecount
-	if len(isInlineCount) > 0 {
+// 	// if $inlinecount is set, return results and inlinecount
+// 	if len(isInlineCount) > 0 {
 
-		if isInlineCount[0] == "allpages" {
+// 		if isInlineCount[0] == "allpages" {
 
-			return object, &CountType{Count: inlineCount}, nil
-		}
-	}
+// 			return object, &CountType{Count: inlineCount}, nil
+// 		}
+// 	}
 
-	// if $count is set with $filter, return only the count of the filtered results
-	mSuccess.Update(1)
-	return nil, &CountType{Count: inlineCount}, nil
+// 	// if $count is set with $filter, return only the count of the filtered results
+// 	mSuccess.Update(1)
+// 	return nil, &CountType{Count: inlineCount}, nil
 
-}
+// }
 
-func findAndUpdateSkus(dbs *db.DB, skuData *[]SKUData) error {
+func findAndUpdateSkus(dbs *sqlx.DB, skuData *[]SKUData) error {
 
 	var skusList []string
 	for _, sku := range *skuData {
@@ -158,13 +165,13 @@ func findAndUpdateSkus(dbs *db.DB, skuData *[]SKUData) error {
 	}
 
 	var results []SKUData
-	execFunc := func(collection *mgo.Collection) error {
-		return collection.Find(bson.M{"sku": bson.M{"$in": skusList}}).All(&results)
-	}
+	// execFunc := func(collection *mgo.Collection) error {
+	// 	return collection.Find(bson.M{"sku": bson.M{"$in": skusList}}).All(&results)
+	// }
 
-	if err := dbs.Execute(productDataCollection, execFunc); err != nil {
-		return err
-	}
+	// if err := dbs.Execute(productDataTable, execFunc); err != nil {
+	// 	return err
+	// }
 
 	mergeProductList(skuData, &results)
 
@@ -215,12 +222,12 @@ func mergeProductList(incoming *[]SKUData, current *[]SKUData) {
 
 // Insert receives a slice of sku mapping and inserts them to the database
 // In case of slice greater than 500 elements, Insert will use a bulk operation in batch of 500
-func Insert(dbs *db.DB, skuData []SKUData) error {
+func Insert(dbs *sqlx.DB, skuData []SKUData) error {
 
 	// Metrics
 	metrics.GetOrRegisterGauge(`Mapping-SKU.Insert.Attempt`, nil).Update(1)
 	mSuccess := metrics.GetOrRegisterGauge(`Mapping-SKU.Insert.Success`, nil)
-	mInsertErr := metrics.GetOrRegisterGauge("Mapping-SKU.Insert.Insert-Error", nil)
+	//mInsertErr := metrics.GetOrRegisterGauge("Mapping-SKU.Insert.Insert-Error", nil)
 	mInsertLatency := metrics.GetOrRegisterTimer(`Mapping-SKU.Insert.Insert-Latency`, nil)
 	mSkuInsertCount := metrics.GetOrRegisterGaugeCollection("Mapping-SKU.Insert.Count", nil)
 
@@ -256,28 +263,28 @@ func Insert(dbs *db.DB, skuData []SKUData) error {
 		keyPairs += 2
 	}
 
-	bulkFunc := func(collection *mgo.Collection) *mgo.Bulk {
-		return collection.Bulk()
-	}
+	// bulkFunc := func(collection *mgo.Collection) *mgo.Bulk {
+	// 	return collection.Bulk()
+	// }
 
-	bulk := dbs.ExecuteBulk(productDataCollection, bulkFunc)
-	bulk.Unordered()
+	// bulk := dbs.ExecuteBulk(productDataTable, bulkFunc)
+	// bulk.Unordered()
 
-	// Upsert in batch of 500 due to mongodb 1000 max ops limitation
-	// 1000 because is a pair of instructions. Thus, 500 items means 1000 size
-	if len(skus) > mongoMaxOps {
-		if err := bulkOperation(skus, dbs, bulk, bulkFunc); err != nil {
-			mInsertErr.Update(1)
-			return err
-		}
+	// // Upsert in batch of 500 due to mongodb 1000 max ops limitation
+	// // 1000 because is a pair of instructions. Thus, 500 items means 1000 size
+	// if len(skus) > mongoMaxOps {
+	// 	if err := bulkOperation(skus, dbs, bulk, bulkFunc); err != nil {
+	// 		mInsertErr.Update(1)
+	// 		return err
+	// 	}
 
-	} else {
-		bulk.Upsert(skus...)
-		if _, err := bulk.Run(); err != nil {
-			mInsertErr.Update(1)
-			return errors.Wrap(err, "Unable to insert SKUs in database (db.bulk.upsert)")
-		}
-	}
+	// } else {
+	// 	bulk.Upsert(skus...)
+	// 	if _, err := bulk.Run(); err != nil {
+	// 		mInsertErr.Update(1)
+	// 		return errors.Wrap(err, "Unable to insert SKUs in database (db.bulk.upsert)")
+	// 	}
+	// }
 
 	mSkuInsertCount.Add(int64(len(skus)))
 	mInsertLatency.Update(time.Since(startTime))
@@ -330,7 +337,7 @@ func bulkOperation(skus []interface{}, dbs *db.DB, bulk *mgo.Bulk, bulkFunc func
 		// Flush any queued data
 		// Reinitialize bulk after being flushed
 		bulk = nil
-		bulk = dbs.ExecuteBulk(productDataCollection, bulkFunc)
+		bulk = dbs.ExecuteBulk(productDataTable, bulkFunc)
 		bulk.Unordered()
 
 		// Break after last batch
@@ -362,7 +369,7 @@ func GetProductMetadata(dbs *db.DB, productId string) (SKUData, error) {
 				"$elemMatch": bson.M{
 					"productId": productId}}}).One(&skuData)
 	}
-	if err := dbs.Execute(productDataCollection, execFunc); err != nil {
+	if err := dbs.Execute(productDataTable, execFunc); err != nil {
 		if err == mgo.ErrNotFound {
 			mSuccess.Update(1)
 			return SKUData{}, web.NotFoundError()
@@ -384,7 +391,7 @@ func Delete(dbs *db.DB, sku string) error {
 	execFunc := func(collection *mgo.Collection) error {
 		return collection.Remove(bson.M{"sku": sku})
 	}
-	if err := dbs.Execute(productDataCollection, execFunc); err != nil {
+	if err := dbs.Execute(productDataTable, execFunc); err != nil {
 		if err == mgo.ErrNotFound {
 			mSuccess.Update(1)
 			return web.NotFoundError()

@@ -44,49 +44,49 @@ func TestMain(m *testing.M) {
 
 }
 
-func TestDataProcess(t *testing.T) {
+// func TestDataProcess(t *testing.T) {
 
-	masterDb := createDB(t)
-	defer masterDb.Close()
+// 	masterDb := createDB(t)
+// 	defer masterDb.Close()
 
-	JSONSample := []byte(`
-				 [
-							{
-								"sku": "12345678",
-								"upc": "123456789789",
-								"beingRead": 0.01,
-								"becomingReadable": 0.02,
-								"exitError": 0.03,
-								"dailyTurn": 0.04,
-								"metadata": {
-									"color":"blue",
-									"size":"XS"
-								}
-							
-							},
-							{
-								"sku": "12345679",
-								"upc": "1234567891234",
-								"metadata": {
-									"color":"blue",
-									"size":"XS"
-								}
-							},
-							{
-								"sku": "12345679",
-								"upc": "123456789784",
-								"dailyTurn": 0.04,
-								"metadata": {
-									"color":"red",
-									"size":"M"
-								}
-							}
-						]`)
+// 	JSONSample := []byte(`
+// 				 [
+// 							{
+// 								"sku": "12345678",
+// 								"upc": "123456789789",
+// 								"beingRead": 0.01,
+// 								"becomingReadable": 0.02,
+// 								"exitError": 0.03,
+// 								"dailyTurn": 0.04,
+// 								"metadata": {
+// 									"color":"blue",
+// 									"size":"XS"
+// 								}
 
-	if err := dataProcess(JSONSample, masterDb); err != nil {
-		t.Fatalf("error processing product data: %+v", err)
-	}
-}
+// 							},
+// 							{
+// 								"sku": "12345679",
+// 								"upc": "1234567891234",
+// 								"metadata": {
+// 									"color":"blue",
+// 									"size":"XS"
+// 								}
+// 							},
+// 							{
+// 								"sku": "12345679",
+// 								"upc": "123456789784",
+// 								"dailyTurn": 0.04,
+// 								"metadata": {
+// 									"color":"red",
+// 									"size":"M"
+// 								}
+// 							}
+// 						]`)
+
+// 	if err := dataProcess(JSONSample, masterDb); err != nil {
+// 		t.Fatalf("error processing product data: %+v", err)
+// 	}
+// }
 
 func createDB(t *testing.T) *db.DB {
 	masterDb, err := db.NewSession(dbHost, 1*time.Second)
