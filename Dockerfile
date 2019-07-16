@@ -20,9 +20,10 @@ COPY --from=builder /usr/lib/libcrypto.so.42 /usr/lib/
 COPY --from=builder /usr/lib/libcrypto.so.42.0.0 /usr/lib/
 
 ADD product-data-service /
+ADD res/docker/ /res
 HEALTHCHECK --interval=5s --timeout=3s CMD ["/product-data-service","-isHealthy"]
 
 ARG GIT_COMMIT=unspecified
 LABEL git_commit=$GIT_COMMIT
 
-ENTRYPOINT ["/product-data-service"]
+CMD ["/product-data-service", "--profile=docker","--confdir=/res"]
