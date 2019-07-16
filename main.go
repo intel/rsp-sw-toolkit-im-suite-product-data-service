@@ -240,7 +240,7 @@ func prepareDB(dbs *db.DB) error {
 func healthCheck(port string) {
 
 	isHealthyPtr := flag.Bool("isHealthy", false, "a bool, runs a healthcheck")
-	flag.Parse()
+	//flag.Parse() Apps function SDK uses flag.Parse() and conflicts with this call
 
 	if *isHealthyPtr {
 		status := healthcheck.Healthcheck(port)
