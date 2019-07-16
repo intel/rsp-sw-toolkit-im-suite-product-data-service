@@ -21,7 +21,6 @@ package main
 import (
 	"log"
 	"os"
-	"strconv"
 	"testing"
 	"time"
 
@@ -95,21 +94,4 @@ func createDB(t *testing.T) *db.DB {
 	}
 
 	return masterDb
-}
-
-func TestParseEvent(t *testing.T) {
-
-	timestamp := 1471806386919
-
-	eventStr := `{"origin":` + strconv.Itoa(timestamp) + `,
-	"device":"rrs-gateway",
-	"readings":[ {"name" : "gwevent", "value": " " } ] 
-   }`
-
-	event := parseEvent(eventStr)
-
-	if event.Device != "rrs-gateway" || event.Origin != int64(timestamp) {
-		t.Error("Error parsing edgex event")
-	}
-
 }

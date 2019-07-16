@@ -32,11 +32,11 @@ import (
 	"sync"
 	"time"
 
+	"github.com/edgexfoundry/app-functions-sdk-go/appcontext"
+	"github.com/edgexfoundry/app-functions-sdk-go/appsdk"
 	"github.com/edgexfoundry/go-mod-core-contracts/models"
 	"github.com/globalsign/mgo"
-	zmq "github.com/pebbe/zmq4"
 	"github.com/pkg/errors"
-	"github.com/sirupsen/logrus"
 	log "github.com/sirupsen/logrus"
 	db "github.impcloud.net/RSP-Inventory-Suite/go-dbWrapper"
 	"github.impcloud.net/RSP-Inventory-Suite/product-data-service/app/config"
@@ -47,7 +47,11 @@ import (
 	reporter "github.impcloud.net/RSP-Inventory-Suite/utilities/go-metrics-influxdb"
 )
 
-const prodDataUrn = "urn:x-intel:context:thing:productmasterdata"
+const serviceKey = "inventory-service"
+
+type myDB struct {
+	masterDB *db.DB
+}
 
 func main() {
 
@@ -400,71 +404,67 @@ func initMetrics() {
 
 func receiveZmqEvents(masterDB *db.DB) {
 
+	db := myDB{masterDB: masterDB}
+
 	go func() {
-		q, _ := zmq.NewSocket(zmq.SUB)
-		defer q.Close()
-		uri := fmt.Sprintf("%s://%s", "tcp", config.AppConfig.ZeroMQ)
-		if err := q.Connect(uri); err != nil {
-			logrus.Error(err)
+
+		//Initialized EdgeX apps functionSDK
+		edgexSdk := &appsdk.AppFunctionsSDK{ServiceKey: serviceKey}
+		if err := edgexSdk.Initialize(); err != nil {
+			edgexSdk.LoggingClient.Error(fmt.Sprintf("SDK initialization failed: %v\n", err))
+			os.Exit(-1)
 		}
-		logrus.Infof("Connected to 0MQ at %s", uri)
-		// Edgex Delhi release uses no topic for all sensor data
-		q.SetSubscribe("")
 
-		for {
-			msg, err := q.RecvMessage(0)
-			if err != nil {
-				id, _ := q.GetIdentity()
-				logrus.Error(fmt.Sprintf("Error getting message %s", id))
-				continue
-			}
-			for _, str := range msg {
-				event := parseEvent(str)
+		// Filter data by value descriptors
+		deviceFilter := []string{"SKU_Data_Device"}
 
-				if event.Device != "SKU_Data_Device" {
-					continue
-				}
-				for _, read := range event.Readings {
+		edgexSdk.SetFunctionsPipeline(
+			edgexSdk.DeviceNameFilter(deviceFilter),
+			db.processEvents,
+		)
 
-					if read.Name != "SKU_data" {
-						continue
-					}
-
-					data, err := base64.StdEncoding.DecodeString(read.Value)
-					if err != nil {
-						log.WithFields(log.Fields{
-							"Method": "receiveZmqEvents",
-							"Action": "product data ingestion",
-							"Error":  err.Error(),
-						}).Error("error decoding base64 value")
-						continue
-					}
-
-					if err := dataProcess(data, masterDB); err != nil {
-						log.WithFields(log.Fields{
-							"Method": "receiveZmqEvents",
-							"Action": "product data ingestion",
-							"Error":  err.Error(),
-						}).Error("error processing product data")
-					}
-
-				}
-
-			}
-
+		err := edgexSdk.MakeItRun()
+		if err != nil {
+			edgexSdk.LoggingClient.Error("MakeItRun returned error: ", err.Error())
+			os.Exit(-1)
 		}
+
 	}()
 }
 
-func parseEvent(str string) *models.Event {
-	event := models.Event{}
+func (db myDB) processEvents(edgexcontext *appcontext.Context, params ...interface{}) (bool, interface{}) {
 
-	if err := json.Unmarshal([]byte(str), &event); err != nil {
-		logrus.Error(err.Error())
-		logrus.Warn("Failed to parse event")
-		return nil
+	if len(params) < 1 {
+		return false, nil
 	}
-	return &event
+
+	event := params[0].(models.Event)
+
+	if len(event.Readings) < 1 {
+		return false, nil
+	}
+
+	// Value is base64 encoded
+	data, err := base64.StdEncoding.DecodeString(event.Readings[0].Value)
+	if err != nil {
+		log.WithFields(log.Fields{
+			"Method": "receiveZmqEvents",
+			"Action": "product data ingestion",
+			"Error":  err.Error(),
+		}).Error("error decoding base64 value")
+		return false, nil
+	}
+
+	if err := dataProcess(data, db.masterDB); err != nil {
+		log.WithFields(log.Fields{
+			"Method": "receiveZmqEvents",
+			"Action": "product data ingestion",
+			"Error":  err.Error(),
+		}).Error("error processing product data")
+		return false, nil
+	}
+
+	return false, nil
 }
 
 func setLoggingLevel(loggingLevel string) {
