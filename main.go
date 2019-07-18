@@ -45,7 +45,7 @@ import (
 	reporter "github.impcloud.net/RSP-Inventory-Suite/utilities/go-metrics-influxdb"
 )
 
-const serviceKey = "inventory-service"
+const serviceKey = "product-data-service"
 
 type myDB struct {
 	masterDB *db.DB
