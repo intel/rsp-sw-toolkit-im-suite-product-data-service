@@ -22,7 +22,6 @@ import (
 	"context"
 	"encoding/base64"
 	"encoding/json"
-	"flag"
 	"fmt"
 	golog "log"
 	"net/http"
@@ -42,7 +41,6 @@ import (
 	"github.impcloud.net/RSP-Inventory-Suite/product-data-service/app/config"
 	"github.impcloud.net/RSP-Inventory-Suite/product-data-service/app/productdata"
 	"github.impcloud.net/RSP-Inventory-Suite/product-data-service/app/routes"
-	"github.impcloud.net/RSP-Inventory-Suite/product-data-service/pkg/healthcheck"
 	"github.impcloud.net/RSP-Inventory-Suite/utilities/go-metrics"
 	reporter "github.impcloud.net/RSP-Inventory-Suite/utilities/go-metrics-influxdb"
 )
@@ -68,9 +66,6 @@ func main() {
 			"Action": "Load config",
 		}).Fatal(err.Error())
 	}
-
-	// Initialize healthcheck
-	healthCheck(config.AppConfig.Port)
 
 	// Initialize metrics reporting
 	initMetrics()
@@ -235,18 +230,6 @@ func prepareDB(dbs *db.DB) error {
 	}).Info("Prepared database indexes...")
 
 	return nil
-}
-
-func healthCheck(port string) {
-
-	isHealthyPtr := flag.Bool("isHealthy", false, "a bool, runs a healthcheck")
-	//flag.Parse() Apps function SDK uses flag.Parse() and conflicts with this call
-
-	if *isHealthyPtr {
-		status := healthcheck.Healthcheck(port)
-		os.Exit(status)
-	}
-
 }
 
 /*
