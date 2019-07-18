@@ -30,12 +30,11 @@ COPY --from=builder /usr/lib/libcrypto.so.42 /usr/lib/
 COPY --from=builder /usr/lib/libcrypto.so.42.0.0 /usr/lib/
 
 # CURL libraries
-COPY --from=builder /usr/bin/curl /usr/bin
+COPY --from=builder /usr/bin/curl /usr/bin/
 COPY --from=builder /rootfs/curl /
 
 ADD product-data-service /
 ADD res/docker/ /res
-HEALTHCHECK CMD curl --fail http://localhost:8080/ || exit 1
 
 ARG GIT_COMMIT=unspecified
 LABEL git_commit=$GIT_COMMIT
