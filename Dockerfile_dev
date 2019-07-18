@@ -52,12 +52,12 @@ COPY --from=builder /usr/lib/libgcc_s.so.1 /usr/lib/
 COPY --from=builder /usr/lib/libcrypto.so.42 /usr/lib/
 COPY --from=builder /usr/lib/libcrypto.so.42.0.0 /usr/lib/
 
+# CURL libraries
+COPY --from=builder /usr/bin/curl /usr/bin/
+COPY --from=builder /rootfs/curl /
+
 COPY --from=gobuilder /go/src/github.impcloud.net/RSP-Inventory-Suite/product-data-service/product-data-service /
 COPY --from=gobuilder /go/src/github.impcloud.net/RSP-Inventory-Suite/product-data-service/res/docker /res/docker
-
-# CURL libraries
-COPY --from=builder /usr/bin/curl /usr/bin
-COPY --from=builder /rootfs/curl /
 
 HEALTHCHECK CMD curl --fail http://localhost:8080/ || exit 1
 
