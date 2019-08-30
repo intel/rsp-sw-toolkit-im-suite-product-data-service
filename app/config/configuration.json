@@ -4,10 +4,7 @@
   "telemetryEndpoint": "",
   "telemetryDataStoreName": "",
   "databaseName": "productdata",
-  "loggingLevel": "debug",
-  "zeroMQ": "127.0.0.1:5563",
-  "secureMode" : false,
-  "skipCertVerify" : false,
+  "loggingLevel": "debug",      
   "port": "8081",
   "responseLimit": 10000
 }

@@ -27,10 +27,9 @@ import (
 
 type (
 	variables struct {
-		ServiceName, ConnectionString, DatabaseName, LoggingLevel, Port, ZeroMQ string
-		TelemetryEndpoint, TelemetryDataStoreName                               string
-		SecureMode, SkipCertVerify                                              bool
-		ResponseLimit                                                           int
+		ServiceName, ConnectionString, DatabaseName, LoggingLevel, Port string
+		TelemetryEndpoint, TelemetryDataStoreName                       string
+		ResponseLimit                                                   int
 	}
 )
 
@@ -82,21 +81,6 @@ func InitConfig() error {
 	}
 
 	AppConfig.TelemetryDataStoreName, err = config.GetString("telemetryDataStoreName")
-	if err != nil {
-		return errors.Wrapf(err, "Unable to load config variables: %s", err.Error())
-	}
-
-	AppConfig.SecureMode, err = config.GetBool("secureMode")
-	if err != nil {
-		return errors.Wrapf(err, "Unable to load config variables: %s", err.Error())
-	}
-
-	AppConfig.SkipCertVerify, err = config.GetBool("skipCertVerify")
-	if err != nil {
-		return errors.Wrapf(err, "Unable to load config variables: %s", err.Error())
-	}
-
-	AppConfig.ZeroMQ, err = config.GetString("zeroMQ")
 	if err != nil {
 		return errors.Wrapf(err, "Unable to load config variables: %s", err.Error())
 	}
