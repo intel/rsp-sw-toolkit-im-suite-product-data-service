@@ -19,10 +19,10 @@
 package routes
 
 import (
+	"database/sql"
 	"net/http"
 
 	"github.com/gorilla/mux"
-	"github.com/jmoiron/sqlx"
 
 	"github.impcloud.net/RSP-Inventory-Suite/product-data-service/app/routes/handlers"
 	"github.impcloud.net/RSP-Inventory-Suite/product-data-service/pkg/middlewares"
@@ -38,9 +38,9 @@ type Route struct {
 }
 
 // NewRouter creates the routes for GET and POST
-func NewRouter(masterDB *sqlx.DB, size int) *mux.Router {
+func NewRouter(db *sql.DB, size int) *mux.Router {
 
-	mapp := handlers.Mapping{MasterDB: masterDB, Size: size}
+	mapp := handlers.Mapping{MasterDB: db, Size: size}
 
 	var routes = []Route{
 		// swagger:operation GET / default Healthcheck

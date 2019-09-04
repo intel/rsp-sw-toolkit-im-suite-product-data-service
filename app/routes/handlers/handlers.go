@@ -20,17 +20,15 @@ package handlers
 
 import (
 	"context"
+	"database/sql"
 	"net/http"
-	"reflect"
 
-	"github.com/jmoiron/sqlx"
-	"github.impcloud.net/RSP-Inventory-Suite/product-data-service/app/productdata"
 	"github.impcloud.net/RSP-Inventory-Suite/product-data-service/pkg/web"
 )
 
 // Mapping represents the User API method handler set.
 type Mapping struct {
-	MasterDB *sqlx.DB
+	MasterDB *sql.DB
 	Size     int
 }
 
@@ -71,28 +69,28 @@ func (mapp *Mapping) Index(ctx context.Context, writer http.ResponseWriter, requ
 // 200 OK, 400 Bad Request, 500 Internal Error
 func (mapp *Mapping) GetSkuMapping(ctx context.Context, writer http.ResponseWriter, request *http.Request) error {
 
-	results, count, err := productdata.Retrieve(mapp.MasterDB, request.URL.Query(), mapp.Size)
-	if err != nil {
-		return web.InvalidInputError(err)
-	}
+	// results, count, err := productdata.Retrieve(mapp.MasterDB, request.URL.Query(), mapp.Size)
+	// if err != nil {
+	// 	return web.InvalidInputError(err)
+	// }
 
-	// we need to check if this is a countType or if it's an array of interfaces
-	if count != nil && results == nil {
-		web.Respond(ctx, writer, count, http.StatusOK)
-		return nil
-	}
+	// // we need to check if this is a countType or if it's an array of interfaces
+	// if count != nil && results == nil {
+	// 	web.Respond(ctx, writer, count, http.StatusOK)
+	// 	return nil
+	// }
 
-	resultSlice := reflect.ValueOf(results)
+	// resultSlice := reflect.ValueOf(results)
 
-	if resultSlice.Len() < 1 {
-		results = []interface{}{} // Return empty array
-	}
+	// if resultSlice.Len() < 1 {
+	// 	results = []interface{}{} // Return empty array
+	// }
 
-	if count != nil && results != nil {
-		web.Respond(ctx, writer, Response{Results: results, Count: &count.Count}, http.StatusOK)
-		return nil
-	}
-	web.Respond(ctx, writer, Response{Results: results}, http.StatusOK)
+	// if count != nil && results != nil {
+	// 	web.Respond(ctx, writer, Response{Results: results, Count: &count.Count}, http.StatusOK)
+	// 	return nil
+	// }
+	// web.Respond(ctx, writer, Response{Results: results}, http.StatusOK)
 	return nil
 }
 

@@ -20,7 +20,7 @@ package main
 
 import (
 	"context"
-	"encoding/base64"
+	"database/sql"
 	"encoding/json"
 	"flag"
 	"fmt"
@@ -41,7 +41,6 @@ import (
 	"github.impcloud.net/RSP-Inventory-Suite/product-data-service/app/config"
 	"github.impcloud.net/RSP-Inventory-Suite/product-data-service/app/productdata"
 	"github.impcloud.net/RSP-Inventory-Suite/product-data-service/app/routes"
-	"github.impcloud.net/RSP-Inventory-Suite/product-data-service/pkg/database"
 	"github.impcloud.net/RSP-Inventory-Suite/product-data-service/pkg/healthcheck"
 	"github.impcloud.net/RSP-Inventory-Suite/utilities/go-metrics"
 	reporter "github.impcloud.net/RSP-Inventory-Suite/utilities/go-metrics-influxdb"
@@ -49,16 +48,12 @@ import (
 
 const schema = `
 CREATE TABLE IF NOT EXISTS skus (
-	sku text,
-	productlist JSONB,
-	PRIMARY KEY (sku)
+	id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+	data JSONB	
 );
 
-CREATE INDEX IF NOT EXISTS idx_sku 
-ON skus(sku);
-
 CREATE INDEX IF NOT EXISTS idx_upc 
-ON skus ((productlist->'upc'));
+ON skus ((data->'upc'));
 `
 
 func main() {
@@ -97,14 +92,7 @@ func main() {
 
 	log.WithFields(log.Fields{"Method": "main", "Action": "Start"}).Info("Connecting to database...")
 
-	db, err := database.Open(database.Config{
-		User:     "postgres",
-		Password: "example",
-		Host:     config.AppConfig.ConnectionString,
-		DbName:   config.AppConfig.DatabaseName,
-	})
-	mDbConnection.Update(1)
-
+	db, err := dbSetup(config.AppConfig.ConnectionString, "5432", "postgres", "", config.AppConfig.DatabaseName)
 	if err != nil {
 		mDbErr.Update(1)
 		log.WithFields(log.Fields{
@@ -114,9 +102,7 @@ func main() {
 		}).Fatal("Unable to connect to database.")
 	}
 	defer db.Close()
-
-	// Prepares database schema and indexes
-	db.MustExec(schema)
+	mDbConnection.Update(1)
 
 	// Receive data from EdgeX core data
 	receiveZmqEvents(db)
@@ -127,10 +113,10 @@ func main() {
 	log.WithField("Method", "main").Info("Completed.")
 }
 
-func startWebServer(masterDB *sqlx.DB, port string, responseLimit int, serviceName string) {
+func startWebServer(db *sql.DB, port string, responseLimit int, serviceName string) {
 
 	// Start Webserver and pass additional data
-	router := routes.NewRouter(masterDB, responseLimit)
+	router := routes.NewRouter(db, responseLimit)
 
 	// Create a new server and set timeout values.
 	server := http.Server{
@@ -320,10 +306,10 @@ func dataProcess(jsonBytes []byte, masterDB *sqlx.DB) error {
 		prodDataList = append(prodDataList, skuData)
 	}
 
-	if err := productdata.Insert(masterDB, prodDataList); err != nil {
-		// Metrics not instrumented as it is handled in the controller.
-		return err
-	}
+	// if err := productdata.Insert(masterDB, prodDataList); err != nil {
+	// 	// Metrics not instrumented as it is handled in the controller.
+	// 	return err
+	// }
 
 	log.WithFields(log.Fields{
 		"Length": len(prodDataList),
@@ -351,7 +337,7 @@ func initMetrics() {
 	}
 }
 
-func receiveZmqEvents(masterDB *sqlx.DB) {
+func receiveZmqEvents(masterDB *sql.DB) {
 
 	go func() {
 		q, _ := zmq.NewSocket(zmq.SUB)
@@ -383,23 +369,23 @@ func receiveZmqEvents(masterDB *sqlx.DB) {
 						continue
 					}
 
-					data, err := base64.StdEncoding.DecodeString(read.Value)
-					if err != nil {
-						log.WithFields(log.Fields{
-							"Method": "receiveZmqEvents",
-							"Action": "product data ingestion",
-							"Error":  err.Error(),
-						}).Error("error decoding base64 value")
-						continue
-					}
+					// data, err := base64.StdEncoding.DecodeString(read.Value)
+					// if err != nil {
+					// 	log.WithFields(log.Fields{
+					// 		"Method": "receiveZmqEvents",
+					// 		"Action": "product data ingestion",
+					// 		"Error":  err.Error(),
+					// 	}).Error("error decoding base64 value")
+					// 	continue
+					// }
 
-					if err := dataProcess(data, masterDB); err != nil {
-						log.WithFields(log.Fields{
-							"Method": "receiveZmqEvents",
-							"Action": "product data ingestion",
-							"Error":  err.Error(),
-						}).Error("error processing product data")
-					}
+					// if err := dataProcess(data, masterDB); err != nil {
+					// 	log.WithFields(log.Fields{
+					// 		"Method": "receiveZmqEvents",
+					// 		"Action": "product data ingestion",
+					// 		"Error":  err.Error(),
+					// 	}).Error("error processing product data")
+					// }
 
 				}
 
@@ -436,4 +422,20 @@ func setLoggingLevel(loggingLevel string) {
 
 	// Not using filtered func (Info, etc ) so that message is always logged
 	golog.Printf("Logging level set to %s\n", loggingLevel)
+}
+
+func dbSetup(host, port, user, password, dbname string) (*sql.DB, error) {
+
+	// Connect to PostgreSQL
+	psqlInfo := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable", host, port, user, password, dbname)
+
+	db, err := sql.Open("postgres", psqlInfo)
+	if err != nil {
+		return nil, err
+	}
+
+	// Prepares database schema and indexes
+	db.Exec(schema)
+
+	return db, nil
 }
