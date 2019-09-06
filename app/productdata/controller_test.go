@@ -20,7 +20,9 @@ package productdata
 
 import (
 	"database/sql"
+	"encoding/json"
 	"fmt"
+	"net/url"
 	"testing"
 )
 
@@ -32,33 +34,16 @@ const (
 	dbname   = "postgres"
 )
 
-//nolint :dupl
-// func TestMain(m *testing.M) {
-// 	if err := config.InitConfig(); err != nil {
-// 		log.Fatal(err)
-// 	}
+func TestInsertSkuMapping(t *testing.T) {
 
-// 	dbName := config.AppConfig.DatabaseName
-// 	dbHost = config.AppConfig.ConnectionString + "/" + dbName
+	db := dbSetup(t)
 
-// 	os.Exit(m.Run())
+	expectedMappings := insertSampleData(db, t)
 
-// }
-
-// func TestInsertSkuMapping(t *testing.T) {
-
-// 	masterDb, err := db.NewSession(dbHost, 5*time.Second)
-// 	if err != nil {
-// 		t.Error("Unable to connect to db")
-// 	}
-// 	defer masterDb.Close()
-
-// 	expectedMappings := insertSampleData(masterDb, t)
-
-// 	if expectedMappings == nil {
-// 		t.Error("Unable to insert data")
-// 	}
-// }
+	if expectedMappings == nil {
+		t.Error("Unable to insert data")
+	}
+}
 
 // func TestInsertDuplicateProductIDsSKUMapping(t *testing.T) {
 
@@ -102,238 +87,197 @@ const (
 // 	}
 // }
 
-// func TestRetrieveCount(t *testing.T) {
-// 	testURL, err := url.Parse("http://localhost/test?$count")
-// 	if err != nil {
-// 		t.Error("Failed to parse test URL")
-// 	}
+func TestRetrieveCount(t *testing.T) {
+	testURL, err := url.Parse("http://localhost/test?$count")
+	if err != nil {
+		t.Error("Failed to parse test URL")
+	}
 
-// 	masterDb := createDB(t)
-// 	defer masterDb.Close()
+	db := dbSetup(t)
 
-// 	copySession := masterDb.CopySession()
-// 	defer copySession.Close()
+	//insertSampleData(masterDb, t)
 
-// 	insertSampleData(masterDb, t)
+	results, count, err := Retrieve(db, testURL.Query(), 1000)
+	if err != nil {
+		t.Error("Unable to retrieve SKUs")
+	}
+	if results != nil {
+		t.Error("Expected results to be nil, but got something else")
+	}
 
-// 	results, count, err := Retrieve(copySession, testURL.Query(), 1000)
-// 	if err != nil {
-// 		t.Error("Unable to retrieve SKUs")
-// 	}
-// 	if results != nil {
-// 		t.Error("Expected results to be nil, but got something else")
-// 	}
+	if count == nil {
+		t.Error("Expected count type, but got something else")
+	}
+}
 
-// 	if count == nil {
-// 		t.Error("Expected count type, but got something else")
-// 	}
-// }
+func TestRetrieveCountWithFilterQuery(t *testing.T) {
+	testURL, err := url.Parse("http://localhost/test?$count&$filter=sku eq 'MS122-32'")
+	if err != nil {
+		t.Error("Failed to parse test URL")
+	}
 
-// func TestRetrieveCountWithFilterQuery(t *testing.T) {
-// 	testURL, err := url.Parse("http://localhost/test?$count&$filter=sku eq 'MS122-32'")
-// 	if err != nil {
-// 		t.Error("Failed to parse test URL")
-// 	}
+	db := dbSetup(t)
 
-// 	db := dbSetup(t)
+	//insertSampleData(masterDb, t)
 
-// 	//insertSampleData(masterDb, t)
+	results, count, err := Retrieve(db, testURL.Query(), 1000)
+	if err != nil {
+		t.Errorf("Unable to retrieve SKUs. Error: %s", err.Error())
+	}
 
-// 	results, count, err := Retrieve(db, testURL.Query(), 1000)
-// 	if err != nil {
-// 		t.Error("Unable to retrieve SKUs")
-// 	}
+	if results != nil {
+		t.Error("Expected results to be nil, but got something else")
+	}
 
-// 	if results != nil {
-// 		t.Error("Expected results to be nil, but got something else")
-// 	}
+	if count == nil {
+		t.Error("Expected count type, but got something else")
+	}
+}
 
-// 	if count == nil {
-// 		t.Error("Expected count type, but got something else")
-// 	}
-// }
+func TestRetrieveInlinecount(t *testing.T) {
 
-// func TestRetrieveInlinecount(t *testing.T) {
+	testURL, err := url.Parse("http://localhost/test?$filter=sku eq 'MS122-32'&$inlinecount=allpages")
+	if err != nil {
+		t.Error("failed to parse test url")
+	}
 
-// 	testURL, err := url.Parse("http://localhost/test?$filter=sku eq 'MS122-32'&$inlinecount=allpages")
-// 	if err != nil {
-// 		t.Error("failed to parse test url")
-// 	}
+	db := dbSetup(t)
 
-// 	masterDb := createDB(t)
-// 	defer masterDb.Close()
+	//insertSampleData(masterDb, t)
 
-// 	insertSampleData(masterDb, t)
+	results, count, err := Retrieve(db, testURL.Query(), 1000)
 
-// 	copySession := masterDb.CopySession()
-// 	defer copySession.Close()
+	if count == nil {
+		t.Error("expecting inlinecount result")
+	}
 
-// 	results, count, err := Retrieve(copySession, testURL.Query(), 1000)
+	if results == nil {
+		t.Error("Expecting results, but got nil")
+	}
 
-// 	if count == nil {
-// 		t.Error("expecting inlinecount result")
-// 	}
+	if err != nil {
+		t.Error("Unable to retrieve", err.Error())
+	}
+}
 
-// 	if results == nil {
-// 		t.Error("Expecting results, but got nil")
-// 	}
+func TestRetrieveCountNoDatabase(t *testing.T) {
+	testURL, err := url.Parse("http://localhost/test?$count")
+	if err != nil {
+		t.Error("Failed to parse test URL")
+	}
 
-// 	if err != nil {
-// 		t.Error("Unable to retrieve", err.Error())
-// 	}
-// }
+	// No database session, so query should fail
+	if _, _, err = Retrieve(nil, testURL.Query(), 1000); err == nil {
+		t.Error("Expected an error, but Retrieve returned a value")
+	}
+}
 
-// func TestRetrieveCountNoDatabase(t *testing.T) {
-// 	testURL, err := url.Parse("http://localhost/test?$count")
-// 	if err != nil {
-// 		t.Error("Failed to parse test URL")
-// 	}
+func TestRetrieveWithFilter(t *testing.T) {
+	testURL, err := url.Parse("http://localhost/test?$filter=name eq 'asdf'")
+	if err != nil {
+		t.Error("Failed to parse test URL")
+	}
 
-// 	// No database session, so query should fail
-// 	if _, _, err = Retrieve(nil, testURL.Query(), 1000); err == nil {
-// 		t.Error("Expected an error, but Retrieve returned a value")
-// 	}
-// }
+	db := dbSetup(t)
 
-// func TestRetrieveWithFilter(t *testing.T) {
-// 	testURL, err := url.Parse("http://localhost/test?$filter=name eq 'asdf'")
-// 	if err != nil {
-// 		t.Error("Failed to parse test URL")
-// 	}
+	//insertSampleData(masterDb, t)
 
-// 	masterDb := createDB(t)
-// 	defer masterDb.Close()
+	_, _, err = Retrieve(db, testURL.Query(), 1000)
+	if err != nil {
+		t.Errorf("Retrieve failed with error %v", err.Error())
+	}
 
-// 	copySession := masterDb.CopySession()
-// 	defer copySession.Close()
+	// if _, ok := result.([]interface{}); !ok {
+	// 	t.Errorf("Expected []interface{}, but got %T", result)
+	// }
+}
 
-// 	insertSampleData(masterDb, t)
+func TestRetrieveSizeLimitWithTop(t *testing.T) {
 
-// 	result, _, err := Retrieve(copySession, testURL.Query(), 1000)
-// 	if err != nil {
-// 		t.Errorf("Retrieve failed with error %v", err.Error())
-// 	}
+	var sizeLimit = 1
 
-// 	if _, ok := result.([]interface{}); !ok {
-// 		t.Errorf("Expected []interface{}, but got %T", result)
-// 	}
-// }
+	// Trying to return more than 1 result
+	testURL, err := url.Parse("http://localhost/test?$inlinecount=allpages&$top=2")
+	if err != nil {
+		t.Error("Failed to parse test URL")
+	}
 
-// func TestRetrieveSizeLimitWithTop(t *testing.T) {
+	db := dbSetup(t)
 
-// 	var sizeLimit = 1
+	//insertSampleData(db, t)
 
-// 	// Trying to return more than 1 result
-// 	testURL, err := url.Parse("http://localhost/test?$inlinecount=allpages&$top=2")
-// 	if err != nil {
-// 		t.Error("Failed to parse test URL")
-// 	}
+	results, count, err := Retrieve(db, testURL.Query(), sizeLimit)
+	if err != nil {
+		t.Errorf("Retrieve failed with error %v", err.Error())
+	}
 
-// 	masterDb := createDB(t)
-// 	defer masterDb.Close()
+	if len(results) > sizeLimit {
+		t.Errorf("Error retrieving results with size limit. Expected: %d , received: %d", sizeLimit, count.Count)
+	}
 
-// 	copySession := masterDb.CopySession()
-// 	defer copySession.Close()
+}
 
-// 	insertSampleData(masterDb, t)
+func TestRetrieveSizeLimitInvalidTop(t *testing.T) {
 
-// 	results, count, err := Retrieve(copySession, testURL.Query(), sizeLimit)
-// 	if err != nil {
-// 		t.Errorf("Retrieve failed with error %v", err.Error())
-// 	}
+	var sizeLimit = 1
 
-// 	resultSlice := reflect.ValueOf(results)
+	// Trying to return more than 1 result
+	testURL, err := url.Parse("http://localhost/test?$inlinecount=allpages&$top=string")
+	if err != nil {
+		t.Error("Failed to parse test URL")
+	}
 
-// 	if resultSlice.Len() > sizeLimit {
-// 		t.Errorf("Error retrieving results with size limit. Expected: %d , received: %d", sizeLimit, count.Count)
-// 	}
+	db := dbSetup(t)
 
-// }
+	_, _, err = Retrieve(db, testURL.Query(), sizeLimit)
+	if err == nil {
+		t.Errorf("Expecting an error for invalid $top value")
+	}
 
-// func TestRetrieveSizeLimitInvalidTop(t *testing.T) {
+}
 
-// 	var sizeLimit = 1
+func TestRetrieveWithBadQuery(t *testing.T) {
+	testURL, err := url.Parse("http://localhost/test?$filter=name eq ")
+	if err != nil {
+		t.Error("Failed to parse test URL")
+	}
 
-// 	// Trying to return more than 1 result
-// 	testURL, err := url.Parse("http://localhost/test?$inlinecount=allpages&$top=string")
-// 	if err != nil {
-// 		t.Error("Failed to parse test URL")
-// 	}
+	db := dbSetup(t)
 
-// 	masterDb := createDB(t)
-// 	defer masterDb.Close()
+	//insertSampleData(masterDb, t)
 
-// 	copySession := masterDb.CopySession()
-// 	defer copySession.Close()
+	_, _, err = Retrieve(db, testURL.Query(), 1000)
+	if err == nil {
+		t.Error("Expected an error, but Retrieve function returned a value")
+	}
+}
 
-// 	_, _, err = Retrieve(copySession, testURL.Query(), sizeLimit)
-// 	if err == nil {
-// 		t.Errorf("Expecting an error for invalid $top value")
-// 	}
+func insertSampleData(db *sql.DB, t *testing.T) []SKUData {
 
-// }
+	JSONSample := `[
+		{ "sku":"MS122-32",
+		  "productList": [ {"productId": "889319388921", "becomingReadable": 0.0456, "dailyTurn": 0.0121, "exitError": 0.0789, "metadata": {"color":"blue"} } ]
+		},
+		{ "sku":"MS122-33",
+			"productList": [ {"productId": "889319388922", "becomingReadable": 0.0456, "beingRead": 0.0123, "dailyTurn": 0.0121, "exitError": 0.0789, "metadata": {"color":"blue"} } ]
+		},
+		{ "sku":"MS122-34",
+			"productList": [ {"productId": "889319388923", "becomingReadable": 0.0456, "beingRead": 0.0123, "dailyTurn": 0.0121, "exitError": 0.0789, "metadata": {"color":"blue"} } ]
+		}
+	]`
 
-// func TestRetrieveWithBadQuery(t *testing.T) {
-// 	testURL, err := url.Parse("http://localhost/test?$filter=name eq ")
-// 	if err != nil {
-// 		t.Error("Failed to parse test URL")
-// 	}
+	var expectedMappings []SKUData
+	err := json.Unmarshal([]byte(JSONSample), &expectedMappings)
+	if err != nil {
+		t.Fatal("Not able to Unmarshal JSON object: " + err.Error())
+	}
 
-// 	masterDb := createDB(t)
-// 	defer masterDb.Close()
+	if err := Insert(db, expectedMappings); err != nil {
+		t.Error("Not able to insert into database: " + err.Error())
+	}
 
-// 	copySession := masterDb.CopySession()
-// 	defer copySession.Close()
-
-// 	insertSampleData(masterDb, t)
-
-// 	_, _, err = Retrieve(copySession, testURL.Query(), 1000)
-// 	if err == nil {
-// 		t.Error("Expected an error, but Retrieve returned a value")
-// 	}
-// }
-
-// func TestRetrieveWithNoDb(t *testing.T) {
-// 	testURL, err := url.Parse("http://localhost/test?$filter=name eq 'asdf'")
-// 	if err != nil {
-// 		t.Error("Failed to parse test URL")
-// 	}
-
-// 	_, _, err = Retrieve(nil, testURL.Query(), 1000)
-// 	if err == nil {
-// 		t.Error("Expected an error, but Retrieve returned a value")
-// 	}
-// }
-
-// func insertSampleData(db *db.DB, t *testing.T) []SKUData {
-
-// 	copySession := db.CopySession()
-// 	defer copySession.Close()
-
-// 	JSONSample := `[
-// 		{ "sku":"MS122-32",
-// 		  "productList": [ {"productId": "889319388921", "becomingReadable": 0.0456, "dailyTurn": 0.0121, "exitError": 0.0789, "metadata": {"color":"blue"} } ]
-// 		},
-// 		{ "sku":"MS122-33",
-// 			"productList": [ {"productId": "889319388922", "becomingReadable": 0.0456, "beingRead": 0.0123, "dailyTurn": 0.0121, "exitError": 0.0789, "metadata": {"color":"blue"} } ]
-// 		},
-// 		{ "sku":"MS122-34",
-// 			"productList": [ {"productId": "889319388923", "becomingReadable": 0.0456, "beingRead": 0.0123, "dailyTurn": 0.0121, "exitError": 0.0789, "metadata": {"color":"blue"} } ]
-// 		}
-// 	]`
-
-// 	var expectedMappings []SKUData
-// 	err := json.Unmarshal([]byte(JSONSample), &expectedMappings)
-// 	if err != nil {
-// 		t.Fatal("Not able to Unmarshal JSON object: " + err.Error())
-// 	}
-
-// 	if err := Insert(copySession, expectedMappings); err != nil {
-// 		t.Error("Not able to insert into mongodb: " + err.Error())
-// 	}
-
-// 	return expectedMappings
-// }
+	return expectedMappings
+}
 
 // func insertSampleDuplicateData(db *db.DB, t *testing.T) []SKUData {
 
@@ -363,24 +307,22 @@ const (
 // 	return expectedMappings
 // }
 
-// func TestRemoveDuplicateProductID(t *testing.T) {
+func TestRemoveDuplicateProductID(t *testing.T) {
 
-// 	duplicateIDs := []ProductData{{ProductID: "889319388921"},
-// 		{ProductID: "889319388921"},
-// 		{ProductID: "889319388921"}}
-// 	expectedIDs := []ProductData{{ProductID: "889319388921"}}
+	duplicateIDs := []ProductData{{ProductID: "889319388921"},
+		{ProductID: "889319388921"},
+		{ProductID: "889319388921"}}
+	expectedIDs := []ProductData{{ProductID: "889319388921"}}
 
-// 	newList := removeDuplicateProducts(duplicateIDs)
+	newList := removeDuplicateProducts(duplicateIDs)
 
-// 	if len(newList) != len(expectedIDs) {
-// 		t.Error("Not able to remove duplicates correctly")
-// 	}
-// }
+	if len(newList) != len(expectedIDs) {
+		t.Error("Not able to remove duplicates correctly")
+	}
+}
 
 // func TestBulkInsert(t *testing.T) {
-// 	masterDb := createDB(t)
-// 	defer masterDb.Close()
-
+// 	db
 // 	copySession := masterDb.CopySession()
 // 	defer copySession.Close()
 

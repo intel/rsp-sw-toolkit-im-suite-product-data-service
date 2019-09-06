@@ -116,9 +116,9 @@ type IncomingData struct {
 // SKUData connects a SKU to its list of products
 type SKUData struct {
 	// SKU represents an identifier a business uses for a product or collection of products
-	SKU string `json:"sku" bson:"sku"`
+	SKU string `json:"sku" db:"sku"`
 	// ProductList connects one or more products to the same SKU
-	ProductList []ProductData `json:"productList" bson:"productList"`
+	ProductList []ProductData `json:"productList" db:"productList"`
 }
 
 // ProductData models the product's attributes

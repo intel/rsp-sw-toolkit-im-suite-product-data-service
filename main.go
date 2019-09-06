@@ -434,6 +434,10 @@ func dbSetup(host, port, user, password, dbname string) (*sql.DB, error) {
 		return nil, err
 	}
 
+	if err := db.Ping(); err != nil {
+		return nil, err
+	}
+
 	// Prepares database schema and indexes
 	db.Exec(schema)
 
