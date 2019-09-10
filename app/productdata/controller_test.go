@@ -22,8 +22,12 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
+	"net/http"
 	"net/url"
+	"strconv"
 	"testing"
+
+	"github.impcloud.net/RSP-Inventory-Suite/product-data-service/pkg/web"
 )
 
 const (
@@ -45,47 +49,39 @@ func TestInsertSkuMapping(t *testing.T) {
 	}
 }
 
-// func TestInsertDuplicateProductIDsSKUMapping(t *testing.T) {
+func TestInsertDuplicateProductIDsSKUMapping(t *testing.T) {
 
-// 	masterDb, err := db.NewSession(dbHost, 5*time.Second)
-// 	if err != nil {
-// 		t.Error("Unable to connect to db")
-// 	}
-// 	defer masterDb.Close()
+	db := dbSetup(t)
+	expectedMappings := insertSampleDuplicateData(db, t)
 
-// 	copySession := masterDb.CopySession()
-// 	defer copySession.Close()
+	if expectedMappings == nil {
+		t.Error("Unable to insert data")
+	}
 
-// 	expectedMappings := insertSampleDuplicateData(masterDb, t)
+	testURL, err := url.Parse("http://localhost/test?$filter=sku eq 'DuplicateSku'")
+	if err != nil {
+		t.Error("Failed to parse test URL")
+	}
 
-// 	if expectedMappings == nil {
-// 		t.Error("Unable to insert data")
-// 	}
+	result, _, err := Retrieve(db, testURL.Query(), 100)
+	if err != nil {
+		t.Fatalf("Error reteiving SKUs: %s", err.Error())
+	}
 
-// 	testURL, err := url.Parse("http://localhost/test?$filter=sku eq 'DuplicateSku'")
-// 	if err != nil {
-// 		t.Error("Failed to parse test URL")
-// 	}
+	bytes, _ := json.Marshal(result)
+	var skus []SKUData
+	if err := json.Unmarshal(bytes, &skus); err != nil {
+		t.Fatal(err)
+	}
 
-// 	result, _, err := Retrieve(copySession, testURL.Query(), 100)
-// 	if err != nil {
-// 		t.Fatalf("Error reteiving SKUs: %s", err.Error())
-// 	}
+	if len(skus) != 1 {
+		t.Error("Duplicate SKU not found after insert, or found too many SKUs")
+	}
 
-// 	bytes, _ := json.Marshal(result)
-// 	var skus []SKUData
-// 	if err := json.Unmarshal(bytes, &skus); err != nil {
-// 		t.Fatal(err)
-// 	}
-
-// 	if len(skus) != 1 {
-// 		t.Error("Duplicate SKU not found after insert, or found too many SKUs")
-// 	}
-
-// 	if len(skus[0].ProductList) != 1 {
-// 		t.Error("Duplicate ProductIDs not removed")
-// 	}
-// }
+	if len(skus[0].ProductList) != 1 {
+		t.Error("Duplicate ProductIDs not removed")
+	}
+}
 
 func TestRetrieveCount(t *testing.T) {
 	testURL, err := url.Parse("http://localhost/test?$count")
@@ -279,33 +275,30 @@ func insertSampleData(db *sql.DB, t *testing.T) []SKUData {
 	return expectedMappings
 }
 
-// func insertSampleDuplicateData(db *db.DB, t *testing.T) []SKUData {
+func insertSampleDuplicateData(db *sql.DB, t *testing.T) []SKUData {
 
-// 	copySession := db.CopySession()
-// 	defer copySession.Close()
+	JSONSample := `[
+		{ "sku":"DuplicateSku",
+		  "productList": [
+				{"productId": "889319388921", "metadata": {"color":"blue"} },
+				{"productId": "889319388921", "metadata": {"color":"blue"} },
+				{"productId": "889319388921", "metadata": {"color":"blue"} }
+			]
+		}
+	]`
 
-// 	JSONSample := `[
-// 		{ "sku":"DuplicateSku",
-// 		  "productList": [
-// 				{"productId": "889319388921", "metadata": {"color":"blue"} },
-// 				{"productId": "889319388921", "metadata": {"color":"blue"} },
-// 				{"productId": "889319388921", "metadata": {"color":"blue"} }
-// 			]
-// 		}
-// 	]`
+	var expectedMappings []SKUData
+	err := json.Unmarshal([]byte(JSONSample), &expectedMappings)
+	if err != nil {
+		t.Fatal("Not able to Unmarshal JSON object: " + err.Error())
+	}
 
-// 	var expectedMappings []SKUData
-// 	err := json.Unmarshal([]byte(JSONSample), &expectedMappings)
-// 	if err != nil {
-// 		t.Fatal("Not able to Unmarshal JSON object: " + err.Error())
-// 	}
+	if err := Insert(db, expectedMappings); err != nil {
+		t.Error("Not able to insert into database: " + err.Error())
+	}
 
-// 	if err := Insert(copySession, expectedMappings); err != nil {
-// 		t.Error("Not able to insert into mongodb: " + err.Error())
-// 	}
-
-// 	return expectedMappings
-// }
+	return expectedMappings
+}
 
 func TestRemoveDuplicateProductID(t *testing.T) {
 
@@ -321,24 +314,22 @@ func TestRemoveDuplicateProductID(t *testing.T) {
 	}
 }
 
-// func TestBulkInsert(t *testing.T) {
-// 	db
-// 	copySession := masterDb.CopySession()
-// 	defer copySession.Close()
+func TestBulkInsert(t *testing.T) {
+	db := dbSetup(t)
 
-// 	expectedMappings := make([]SKUData, 600)
+	expectedMappings := make([]SKUData, 600)
 
-// 	for i := 0; i < 600; i++ {
-// 		mapObj := SKUData{SKU: "622738" + strconv.Itoa(i),
-// 			ProductList: []ProductData{{ProductID: "123"}}}
-// 		expectedMappings[i] = mapObj
-// 	}
+	for i := 0; i < 600; i++ {
+		mapObj := SKUData{SKU: "622738" + strconv.Itoa(i),
+			ProductList: []ProductData{{ProductID: "123"}}}
+		expectedMappings[i] = mapObj
+	}
 
-// 	if err := Insert(copySession, expectedMappings); err != nil {
-// 		t.Error("Not able to insert into mongodb: " + err.Error())
-// 	}
+	if err := Insert(db, expectedMappings); err != nil {
+		t.Error("Not able to insert into database: " + err.Error())
+	}
 
-// }
+}
 
 func dbSetup(t *testing.T) *sql.DB {
 
@@ -347,6 +338,8 @@ func dbSetup(t *testing.T) *sql.DB {
 				id int,
 				data JSONB	
 			);
+			CREATE UNIQUE INDEX IF NOT EXISTS idx_sku
+			ON skus ((data->'sku'));
 	`
 	// Connect to PostgreSQL
 	psqlInfo := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable", host, port, user, password, dbname)
@@ -361,77 +354,66 @@ func dbSetup(t *testing.T) *sql.DB {
 	return db
 }
 
-// func TestGetProductIDMetadataNotFound(t *testing.T) {
-// 	masterDb := createDB(t)
-// 	defer masterDb.Close()
+func TestGetProductIDMetadataNotFound(t *testing.T) {
+	db := dbSetup(t)
 
-// 	copySession := masterDb.CopySession()
-// 	defer copySession.Close()
+	result, err := GetProductMetadata(db, "00000000000000")
+	if err != nil {
+		if common, ok := err.(web.CommonError); !ok || common.Code != http.StatusNotFound {
+			t.Errorf("Retrieve failed with error %+v", err)
+		}
+	}
 
-// 	result, err := GetProductMetadata(copySession, "00000000000000")
-// 	if err != nil {
-// 		if common, ok := err.(web.CommonError); !ok || common.Code != http.StatusNotFound {
-// 			t.Errorf("Retrieve failed with error %+v", err)
-// 		}
-// 	}
+	if result.ProductList != nil {
+		t.Errorf("Expected result.ProductList to be nil, but got %v", result)
+	}
+}
 
-// 	if result.ProductList != nil {
-// 		t.Errorf("Expected result.ProductList to be nil, but got %v", result)
-// 	}
-// }
+func TestGetProductIDMetadataFound(t *testing.T) {
+	db := dbSetup(t)
 
-// func TestGetProductIDMetadataFound(t *testing.T) {
-// 	masterDb := createDB(t)
-// 	defer masterDb.Close()
+	InsertSampleProductMetadata(db, t)
 
-// 	copySession := masterDb.CopySession()
-// 	defer copySession.Close()
+	productID := "12345678912345"
+	result, err := GetProductMetadata(db, productID)
+	if err != nil {
+		t.Errorf("Retrieve failed with error %+v", err)
+	}
 
-// 	InsertSampleProductMetadata(masterDb, t)
+	if result.ProductList == nil {
+		t.Fatal("Expected to find a ProductList item, but ProductList nil")
+	}
 
-// 	productID := "12345678912345"
-// 	result, err := GetProductMetadata(copySession, productID)
-// 	if err != nil {
-// 		t.Errorf("Retrieve failed with error %+v", err)
-// 	}
+	if len(result.ProductList) > 1 {
+		t.Fatal("ProductList should only contain one element")
+	}
 
-// 	if result.ProductList == nil {
-// 		t.Fatal("Expected to find a ProductList item, but ProductList nil")
-// 	}
+	if result.ProductList[0].ProductID != productID {
+		t.Errorf("ProductID did not match expected ProductID: %s received: %s",
+			productID, result.ProductList[0].ProductID)
+	}
+}
 
-// 	if len(result.ProductList) > 1 {
-// 		t.Fatal("ProductList should only contain one element")
-// 	}
+func InsertSampleProductMetadata(db *sql.DB, t *testing.T) []SKUData {
 
-// 	if result.ProductList[0].ProductID != productID {
-// 		t.Errorf("ProductID did not match expected ProductID: %s received: %s",
-// 			productID, result.ProductList[0].ProductID)
-// 	}
-// }
+	JSONSample := `[
+		{ "sku":"MS122-33", "name":"mens formal pants",
+		  "productList": [ {"productId": "12345678912345", "metadata": {"color":"blue"} } ]
+		},
+		{ "sku":"MS122-34", "name":"mens formal pants",
+			"productList": [ {"productId": "12345678912346", "metadata": {"color":"blue"} } ]
+		}
+	]`
 
-// func InsertSampleProductMetadata(db *db.DB, t *testing.T) []SKUData {
+	var expectedMappings []SKUData
+	err := json.Unmarshal([]byte(JSONSample), &expectedMappings)
+	if err != nil {
+		t.Fatal("Not able to Unmarshal JSON object: " + err.Error())
+	}
 
-// 	copySession := db.CopySession()
-// 	defer copySession.Close()
+	if err := Insert(db, expectedMappings); err != nil {
+		t.Error("Not able to insert into database: " + err.Error())
+	}
 
-// 	JSONSample := `[
-// 		{ "sku":"MS122-33", "name":"mens formal pants",
-// 		  "productList": [ {"productId": "12345678912345", "metadata": {"color":"blue"} } ]
-// 		},
-// 		{ "sku":"MS122-34", "name":"mens formal pants",
-// 			"productList": [ {"productId": "12345678912346", "metadata": {"color":"blue"} } ]
-// 		}
-// 	]`
-
-// 	var expectedMappings []SKUData
-// 	err := json.Unmarshal([]byte(JSONSample), &expectedMappings)
-// 	if err != nil {
-// 		t.Fatal("Not able to Unmarshal JSON object: " + err.Error())
-// 	}
-
-// 	if err := Insert(copySession, expectedMappings); err != nil {
-// 		t.Error("Not able to insert into mongodb: " + err.Error())
-// 	}
-
-// 	return expectedMappings
-// }
+	return expectedMappings
+}

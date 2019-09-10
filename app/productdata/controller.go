@@ -272,7 +272,10 @@ func Insert(db *sql.DB, skuData []SKUData) error {
 		return err
 	}
 
+	var upsertStmt strings.Builder
+
 	for _, item := range skuData {
+
 		// Validate empty sku or productList
 		if item.SKU == "" || len(item.ProductList) == 0 {
 			return web.ValidationError(
@@ -282,14 +285,37 @@ func Insert(db *sql.DB, skuData []SKUData) error {
 		// Remove duplicate product IDs, if any
 		item.ProductList = removeDuplicateProducts(item.ProductList)
 
+		obj, err := json.Marshal(item)
+		if err != nil {
+			return err
+		}
+
+		// SQL syntax for upsert:
+
+		// INSERT INTO "skus" ("data") VALUES ('{"sku":"MS122-32","productList":[{"upc":"889319388921","metadata":{"color":"blue"}}]}')
+		// ON CONFLICT (( "data"  ->> 'sku' ))
+		// DO UPDATE SET "data" = "skus"."data" || "{"sku":"MS122-32","productList":[{"upc":"889319388921","metadata":{"color":"blue"}}]}";
+
+		upsertClause := fmt.Sprintf(`INSERT INTO %s (%s) VALUES (%s) 
+									 ON CONFLICT (( %s  ->> 'sku' )) 
+									 DO UPDATE SET %s = %s.%s || %s; `,
+			pq.QuoteIdentifier(productDataTable),
+			pq.QuoteIdentifier(jsonbColumn),
+			pq.QuoteLiteral(string(obj)),
+			pq.QuoteIdentifier(jsonbColumn),
+			pq.QuoteIdentifier(jsonbColumn),
+			pq.QuoteIdentifier(productDataTable),
+			pq.QuoteIdentifier(jsonbColumn),
+			pq.QuoteLiteral(string(obj)),
+		)
+
+		// Making all upsert sql statements into one network call
+		upsertStmt.WriteString(upsertClause)
+
 	}
 
-	// INSERT operation
-	insertClause := fmt.Sprintf(`INSERT INTO %s (%s) VALUES ('{"sku": "MS122-32", "productList": [{"upc": "", "metadata": {"color": "blue"}, "beingRead": 0, "dailyTurn": 0.0121, "exitError": 0.0789, "becomingReadable": 0.0456}]}'::jsonb), ('{"sku": "MS122-33", "productList": [{"upc": "", "metadata": {"color": "blue"}, "beingRead": 0.0123, "dailyTurn": 0.0121, "exitError": 0.0789, "becomingReadable": 0.0456}]}'::jsonb) `, pq.QuoteIdentifier(productDataTable), pq.QuoteIdentifier(jsonbColumn))
-
-	//data := `{"sku": "MS122-32", "productList": [{"upc": "", "metadata": {"color": "blue"}, "beingRead": 0, "dailyTurn": 0.0121, "exitError": 0.0789, "becomingReadable": 0.0456}]}, {"sku": "MS122-33", "productList": [{"upc": "", "metadata": {"color": "blue"}, "beingRead": 0.0123, "dailyTurn": 0.0121, "exitError": 0.0789, "becomingReadable": 0.0456}]}, {"sku": "MS122-34", "productList": [{"upc": "", "metadata": {"color": "blue"}, "beingRead": 0.0123, "dailyTurn": 0.0121, "exitError": 0.0789, "becomingReadable": 0.0456}]}`
-
-	_, err := db.Exec(insertClause)
+	// Not able to use transactions since they do not support multiple sql statements
+	_, err := db.Exec(upsertStmt.String())
 	if err != nil {
 		mInsertErr.Update(1)
 		return err
@@ -318,75 +344,35 @@ func removeDuplicateProducts(productItems []ProductData) []ProductData {
 
 }
 
-// func bulkOperation(skus []interface{}, dbs *db.DB, bulk *mgo.Bulk, bulkFunc func(collection *mgo.Collection) *mgo.Bulk) error {
+// GetProductMetadata receives a product ID (upc) and looks up and returns the corresponding metadata
+func GetProductMetadata(db *sql.DB, productID string) (SKUData, error) {
 
-// 	range1 := 0
-// 	range2 := mongoMaxOps
-// 	lastBatch := false
+	metrics.GetOrRegisterGauge("Mapping-SKU.GetProductMetadata.Attempt", nil).Update(1)
+	startTime := time.Now()
+	defer metrics.GetOrRegisterTimer("Mapping-SKU.GetProductMetadata.Latency", nil).Update(time.Since(startTime))
+	mSuccess := metrics.GetOrRegisterGauge("Mapping-SKU.GetProductMetadata.Success", nil)
+	mDbErr := metrics.GetOrRegisterGauge("Mapping-SKU.GetProductMetadata.DbError", nil)
 
-// 	for {
+	var skuData SKUData
 
-// 		// Queue batches of 1000 elements which translates to 500 operations
-// 		/*
-// 			TODO: Check with the team on if we want to count each bulk batch upsert success or just success of the entire upsert?
-// 			I assume that a single success would suffice.
-// 		*/
-// 		if range2 < len(skus) {
-// 			bulk.Upsert(skus[range1:range2]...)
-// 		} else {
-// 			// Last batch
-// 			bulk.Upsert(skus[range1:]...)
-// 			lastBatch = true
-// 		}
+	selectQuery := fmt.Sprintf(`SELECT %s FROM %s WHERE %s -> 'productList' @> '[{"productId": %s }]' LIMIT 1`,
+		pq.QuoteIdentifier(jsonbColumn),
+		pq.QuoteIdentifier(productDataTable),
+		pq.QuoteIdentifier(jsonbColumn),
+		pq.QuoteIdentifier(productID),
+	)
 
-// 		if _, err := bulk.Run(); err != nil {
-// 			return errors.Wrap(err, "Unable to insert SKUs in database (db.bulk.upsert)")
-// 		}
+	if err := db.QueryRow(selectQuery).Scan(&skuData); err != nil {
 
-// 		// Flush any queued data
-// 		// Reinitialize bulk after being flushed
-// 		bulk = nil
-// 		bulk = dbs.ExecuteBulk(productDataTable, bulkFunc)
-// 		bulk.Unordered()
+		if err == sql.ErrNoRows {
+			mSuccess.Update(1)
+			return SKUData{}, web.NotFoundError()
+		}
 
-// 		// Break after last batch
-// 		if lastBatch {
-// 			break
-// 		}
-// 		range1 = range2
-// 		range2 += mongoMaxOps
+		mDbErr.Update(1)
+		return SKUData{}, err
+	}
 
-// 	}
-
-// 	return nil
-// }
-
-// // GetProductMetadata receives a product ID and looks up and returns the corresponding metadata
-// func GetProductMetadata(dbs *db.DB, productId string) (SKUData, error) {
-
-// 	metrics.GetOrRegisterGauge("Mapping-SKU.GetProductMetadata.Attempt", nil).Update(1)
-// 	startTime := time.Now()
-// 	defer metrics.GetOrRegisterTimer("Mapping-SKU.GetProductMetadata.Latency", nil).Update(time.Since(startTime))
-// 	mSuccess := metrics.GetOrRegisterGauge("Mapping-SKU.GetProductMetadata.Success", nil)
-// 	mMongoErr := metrics.GetOrRegisterGauge("Mapping-SKU.GetProductMetadata.MongoError", nil)
-
-// 	var skuData SKUData
-
-// 	execFunc := func(collection *mgo.Collection) error {
-// 		return collection.Find(bson.M{"productList.productId": productId}).
-// 			Select(bson.M{"productList": bson.M{
-// 				"$elemMatch": bson.M{
-// 					"productId": productId}}}).One(&skuData)
-// 	}
-// 	if err := dbs.Execute(productDataTable, execFunc); err != nil {
-// 		if err == mgo.ErrNotFound {
-// 			mSuccess.Update(1)
-// 			return SKUData{}, web.NotFoundError()
-// 		}
-// 		mMongoErr.Update(1)
-// 		return SKUData{}, errors.Wrap(err, "db.mapping.find()")
-// 	}
-
-// 	mSuccess.Update(1)
-// 	return skuData, nil
-// }
+	mSuccess.Update(1)
+	return skuData, nil
+}

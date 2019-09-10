@@ -52,8 +52,8 @@ CREATE TABLE IF NOT EXISTS skus (
 	data JSONB	
 );
 
-CREATE INDEX IF NOT EXISTS idx_upc 
-ON skus ((data->'upc'));
+CREATE UNIQUE INDEX IF NOT EXISTS idx_sku
+ON skus ((data->'sku'));
 `
 
 func main() {
