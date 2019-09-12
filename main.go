@@ -417,6 +417,8 @@ func dbSetup(host, port, user, password, dbname string) (*sql.DB, error) {
 		return nil, err
 	}
 
+	log.Info("Connected to database...")
+
 	// Prepares database schema and indexes
 	db.Exec(productdata.DbSchema)
 

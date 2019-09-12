@@ -99,6 +99,7 @@ func Retrieve(db *sql.DB, query url.Values, maxSize int) ([]SKUData, *CountType,
 	// Else, run filter query and return slice of SKUData
 	retrieveTimer := time.Now()
 
+	// Run OData PostgreSQL
 	rows, err := odata.ODataSQLQuery(query, productDataTable, jsonbColumn, db)
 	if err != nil {
 		if errors.Cause(err) == odata.ErrInvalidInput {
@@ -250,7 +251,6 @@ func mergeProductList(incoming *[]SKUData, current *[]SKUData) {
 }
 
 // Insert receives a slice of sku mapping and inserts them to the database
-// In case of slice greater than 500 elements, Insert will use a bulk operation in batch of 500
 func Insert(db *sql.DB, skuData []SKUData) error {
 
 	// Metrics
@@ -290,6 +290,15 @@ func Insert(db *sql.DB, skuData []SKUData) error {
 			return err
 		}
 
+		// Example of Upsert:
+		//  INSERT INTO skus (data) VALUES ('{ "sku":"MS122-33", "name":"mens formal pants",
+		//  "productList": [ {"productId": "12345678912345", "metadata": {"color":"blue"} } ]
+		//  }')
+		//  ON CONFLICT (( data  ->> 'sku' ))
+		//  DO UPDATE SET data = sku.data || '{ "sku":"MS122-33", "name":"mens formal pants",
+		//  "productList": [ {"productId": "12345678912345", "metadata": {"color":"red"} } ]
+		//  }';
+
 		upsertClause := fmt.Sprintf(`INSERT INTO %s (%s) VALUES (%s) 
 									 ON CONFLICT (( %s  ->> 'sku' )) 
 									 DO UPDATE SET %s = %s.%s || %s; `,
@@ -308,7 +317,7 @@ func Insert(db *sql.DB, skuData []SKUData) error {
 
 	}
 
-	// Not able to use transactions since they do not support multiple sql statements
+	// Not able to implement transactions since they do not support multiple sql statements
 	_, err := db.Exec(upsertStmt.String())
 	if err != nil {
 		mInsertErr.Update(1)

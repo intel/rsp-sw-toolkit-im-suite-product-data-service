@@ -4,7 +4,7 @@
   "dbUser": "postgres",
   "dbPass": "",
   "dbPort": "5432",
-  "dbName": "prod_data",
+  "dbName": "postgres",
   "dbSslmode": "disable",
   "telemetryEndpoint": "",    
   "zeroMQ": "127.0.0.1:5563",

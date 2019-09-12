@@ -28,7 +28,7 @@ CREATE TABLE IF NOT EXISTS skus (
 );
 
 CREATE UNIQUE INDEX IF NOT EXISTS idx_sku
-ON skus ((data->'sku'));
+ON skus ((data->>'sku'));
 `
 
 // CountType is used to hold the total count

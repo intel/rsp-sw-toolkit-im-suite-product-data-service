@@ -454,7 +454,7 @@ func insertSampleProductMetadata(db *sql.DB, t *testing.T) []productdata.SKUData
 	}
 
 	if err := productdata.Insert(db, expectedMappings); err != nil {
-		t.Fatalf("Not able to insert into mongodb: %+v", err)
+		t.Fatalf("Not able to insert into database: %+v", err)
 	}
 
 	return expectedMappings
