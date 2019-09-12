@@ -21,7 +21,6 @@ package main
 import (
 	"log"
 	"os"
-	"strconv"
 	"testing"
 
 	"github.impcloud.net/RSP-Inventory-Suite/product-data-service/app/config"
@@ -86,21 +85,4 @@ func TestDataProcess(t *testing.T) {
 	if err := dataProcess(JSONSample, db); err != nil {
 		t.Fatalf("error processing product data: %+v", err)
 	}
-}
-
-func TestParseEvent(t *testing.T) {
-
-	timestamp := 1471806386919
-
-	eventStr := `{"origin":` + strconv.Itoa(timestamp) + `,
-	"device":"rrs-gateway",
-	"readings":[ {"name" : "gwevent", "value": " " } ] 
-   }`
-
-	event := parseEvent(eventStr)
-
-	if event.Device != "rrs-gateway" || event.Origin != int64(timestamp) {
-		t.Error("Error parsing edgex event")
-	}
-
 }

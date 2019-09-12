@@ -1,0 +1,33 @@
+[Writable]
+LogLevel = 'INFO'
+
+[Service]
+BootTimeout = 30000
+ClientMonitor = 15000
+CheckInterval = '10s'
+Host = 'product-data-service'
+Port = 48095
+Protocol = 'http'
+ReadMaxLimit = 100
+StartupMsg = 'Product Data Service'
+Timeout = 5000
+
+[Registry]
+Host = 'edgex-core-consul'
+Port = 8500
+Type = 'consul'
+  
+[MessageBus]
+Type = 'zero'
+    [MessageBus.SubscribeHost]
+        Host = 'edgex-core-data'
+        Port = 5563
+        Protocol = 'tcp'
+
+[Logging]
+EnableRemote = false
+File = ''
+
+[Binding]
+ Type="messagebus"
+ SubscribeTopic=""

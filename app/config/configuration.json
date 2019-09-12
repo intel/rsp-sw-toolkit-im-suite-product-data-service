@@ -6,10 +6,11 @@
   "dbPort": "5432",
   "dbName": "prod_data",
   "dbSslmode": "disable",
-  "telemetryEndpoint": "",
-  "telemetryDataStoreName": "",  
-  "loggingLevel": "debug",
+  "telemetryEndpoint": "",    
   "zeroMQ": "127.0.0.1:5563",
+  "telemetryDataStoreName": "",
+  "databaseName": "productdata",
+  "loggingLevel": "debug",      
   "port": "8081",
   "responseLimit": 10000
 }
