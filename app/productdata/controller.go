@@ -51,12 +51,12 @@ type prodDataWrapper struct {
 func Retrieve(db *sql.DB, query url.Values, maxSize int) ([]SKUData, *CountType, error) {
 
 	// Metrics
-	metrics.GetOrRegisterGauge(`Mapping-SKU.Retrieve.Attempt`, nil).Update(1)
-	mCountErr := metrics.GetOrRegisterGauge("Mapping-SKU.Retrieve.Count-Error", nil)
-	mSuccess := metrics.GetOrRegisterGauge(`Mapping-SKU.Retrieve.Success`, nil)
-	mRetrieveErr := metrics.GetOrRegisterGauge("Mapping-SKU.Retrieve.Retrieve-Error", nil)
-	mInputErr := metrics.GetOrRegisterGauge("Mapping-SKU.Retrieve.Input-Error", nil)
-	mRetrieveLatency := metrics.GetOrRegisterTimer(`Mapping-SKU.Retrieve.Retrieve-Latency`, nil)
+	metrics.GetOrRegisterGauge(`Product-Data.Retrieve.Attempt`, nil).Update(1)
+	mCountErr := metrics.GetOrRegisterGauge("Product-Data.Retrieve.Count-Error", nil)
+	mSuccess := metrics.GetOrRegisterGauge(`Product-Data.Retrieve.Success`, nil)
+	mRetrieveErr := metrics.GetOrRegisterGauge("Product-Data.Retrieve.Retrieve-Error", nil)
+	mInputErr := metrics.GetOrRegisterGauge("Product-Data.Retrieve.Input-Error", nil)
+	mRetrieveLatency := metrics.GetOrRegisterTimer(`Product-Data.Retrieve.Retrieve-Latency`, nil)
 
 	if db == nil {
 		return nil, nil, errors.New("No database connection")
@@ -254,11 +254,11 @@ func mergeProductList(incoming *[]SKUData, current *[]SKUData) {
 func Insert(db *sql.DB, skuData []SKUData) error {
 
 	// Metrics
-	metrics.GetOrRegisterGauge(`Mapping-SKU.Insert.Attempt`, nil).Update(1)
-	mSuccess := metrics.GetOrRegisterGauge(`Mapping-SKU.Insert.Success`, nil)
-	mInsertErr := metrics.GetOrRegisterGauge("Mapping-SKU.Insert.Insert-Error", nil)
-	mInsertLatency := metrics.GetOrRegisterTimer(`Mapping-SKU.Insert.Insert-Latency`, nil)
-	mSkuInsertCount := metrics.GetOrRegisterGaugeCollection("Mapping-SKU.Insert.Count", nil)
+	metrics.GetOrRegisterGauge(`Product-Data.Insert.Attempt`, nil).Update(1)
+	mSuccess := metrics.GetOrRegisterGauge(`Product-Data.Insert.Success`, nil)
+	mInsertErr := metrics.GetOrRegisterGauge("Product-Data.Insert.Insert-Error", nil)
+	mInsertLatency := metrics.GetOrRegisterTimer(`Product-Data.Insert.Insert-Latency`, nil)
+	mSkuInsertCount := metrics.GetOrRegisterGaugeCollection("Product-Data.Insert.Count", nil)
 
 	// TODO: Consider a total bytes processed metric for this function.  Check with dev team.
 
@@ -350,11 +350,11 @@ func removeDuplicateProducts(productItems []ProductData) []ProductData {
 // GetProductMetadata receives a product ID (upc) and looks up and returns the corresponding metadata
 func GetProductMetadata(db *sql.DB, productID string) (SKUData, error) {
 
-	metrics.GetOrRegisterGauge("Mapping-SKU.GetProductMetadata.Attempt", nil).Update(1)
+	metrics.GetOrRegisterGauge("Product-Data.GetProductMetadata.Attempt", nil).Update(1)
 	startTime := time.Now()
-	defer metrics.GetOrRegisterTimer("Mapping-SKU.GetProductMetadata.Latency", nil).Update(time.Since(startTime))
-	mSuccess := metrics.GetOrRegisterGauge("Mapping-SKU.GetProductMetadata.Success", nil)
-	mDbErr := metrics.GetOrRegisterGauge("Mapping-SKU.GetProductMetadata.DbError", nil)
+	defer metrics.GetOrRegisterTimer("Product-Data.GetProductMetadata.Latency", nil).Update(time.Since(startTime))
+	mSuccess := metrics.GetOrRegisterGauge("Product-Data.GetProductMetadata.Success", nil)
+	mDbErr := metrics.GetOrRegisterGauge("Product-Data.GetProductMetadata.DbError", nil)
 
 	var skuData SKUData
 

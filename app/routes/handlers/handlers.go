@@ -169,11 +169,11 @@ func (mapp *Mapping) PostSkuMapping(ctx context.Context, writer http.ResponseWri
 // 200 OK, 400 Bad Request,  404 Not Found, 500 Internal Error
 func (mapp *Mapping) GetProductID(ctx context.Context, writer http.ResponseWriter, request *http.Request) error {
 
-	metrics.GetOrRegisterGauge("Mapping-SKU.GetProductID.Attempt", nil).Update(1)
+	metrics.GetOrRegisterGauge("Product-Data.GetProductID.Attempt", nil).Update(1)
 	startTime := time.Now()
-	defer metrics.GetOrRegisterTimer("Mapping-SKU.GetProductID.Latency", nil).Update(time.Since(startTime))
-	mSuccess := metrics.GetOrRegisterGauge("Mapping-SKU.GetProductID.Success", nil)
-	mGetProductMetadataErr := metrics.GetOrRegisterGauge("Mapping-SKU.GetProductID.GetProductMetadataError", nil)
+	defer metrics.GetOrRegisterTimer("Product-Data.GetProductID.Latency", nil).Update(time.Since(startTime))
+	mSuccess := metrics.GetOrRegisterGauge("Product-Data.GetProductID.Success", nil)
+	mGetProductMetadataErr := metrics.GetOrRegisterGauge("Product-Data.GetProductID.GetProductMetadataError", nil)
 
 	vars := mux.Vars(request)
 	productId := vars["productId"]
