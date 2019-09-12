@@ -38,10 +38,6 @@ import (
 const productDataTable = "skus"
 const jsonbColumn = "data"
 
-// Write batch sizes must be between 1 and 1000. For safety, split it into 500 operations per call
-// Because upsert requires a pair of upserting instructions. Use mongoMaxOps = 1000
-const mongoMaxOps = 1000
-
 type prodDataWrapper struct {
 	ID   []uint8 `db:"id" json:"id"`
 	Data SKUData `db:"data" json:"data"`
