@@ -18,6 +18,19 @@
  */
 package productdata
 
+// DbSchema postgresql db schema
+const DbSchema = `
+CREATE EXTENSION IF NOT EXISTS pgcrypto;
+
+CREATE TABLE IF NOT EXISTS skus (
+	id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+	data JSONB	
+);
+
+CREATE UNIQUE INDEX IF NOT EXISTS idx_sku
+ON skus ((data->'sku'));
+`
+
 // CountType is used to hold the total count
 type CountType struct {
 	Count int `json:"count"`

@@ -290,12 +290,6 @@ func Insert(db *sql.DB, skuData []SKUData) error {
 			return err
 		}
 
-		// SQL syntax for upsert:
-
-		// INSERT INTO "skus" ("data") VALUES ('{"sku":"MS122-32","productList":[{"upc":"889319388921","metadata":{"color":"blue"}}]}')
-		// ON CONFLICT (( "data"  ->> 'sku' ))
-		// DO UPDATE SET "data" = "skus"."data" || "{"sku":"MS122-32","productList":[{"upc":"889319388921","metadata":{"color":"blue"}}]}";
-
 		upsertClause := fmt.Sprintf(`INSERT INTO %s (%s) VALUES (%s) 
 									 ON CONFLICT (( %s  ->> 'sku' )) 
 									 DO UPDATE SET %s = %s.%s || %s; `,

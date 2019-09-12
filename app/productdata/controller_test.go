@@ -22,22 +22,26 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
 	"net/url"
+	"os"
 	"strconv"
 	"testing"
 
+	"github.impcloud.net/RSP-Inventory-Suite/product-data-service/app/config"
 	"github.impcloud.net/RSP-Inventory-Suite/product-data-service/pkg/web"
 )
 
-const (
-	host     = "localhost"
-	port     = 5432
-	user     = "postgres"
-	password = ""
-	dbname   = "postgres"
-)
+func TestMain(m *testing.M) {
 
+	if err := config.InitConfig(); err != nil {
+		log.Fatal(err)
+	}
+
+	os.Exit(m.Run())
+
+}
 func TestInsertSkuMapping(t *testing.T) {
 
 	db := dbSetup(t)
@@ -333,23 +337,18 @@ func TestBulkInsert(t *testing.T) {
 
 func dbSetup(t *testing.T) *sql.DB {
 
-	const schema = `
-			CREATE TABLE IF NOT EXISTS skus (	
-				id int,
-				data JSONB	
-			);
-			CREATE UNIQUE INDEX IF NOT EXISTS idx_sku
-			ON skus ((data->'sku'));
-	`
 	// Connect to PostgreSQL
-	psqlInfo := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable", host, port, user, password, dbname)
+	psqlInfo := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable", config.AppConfig.DbHost,
+		config.AppConfig.DbPort,
+		config.AppConfig.DbUser, config.AppConfig.DbPass,
+		config.AppConfig.DbName)
 
 	db, err := sql.Open("postgres", psqlInfo)
 	if err != nil {
 		t.Fatal(err)
 	}
 	// Create table
-	db.Exec(schema)
+	db.Exec(DbSchema)
 
 	return db
 }

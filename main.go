@@ -21,6 +21,7 @@ package main
 import (
 	"context"
 	"database/sql"
+	"encoding/base64"
 	"encoding/json"
 	"flag"
 	"fmt"
@@ -33,7 +34,6 @@ import (
 	"time"
 
 	"github.com/edgexfoundry/go-mod-core-contracts/models"
-	"github.com/jmoiron/sqlx"
 	zmq "github.com/pebbe/zmq4"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
@@ -45,16 +45,6 @@ import (
 	"github.impcloud.net/RSP-Inventory-Suite/utilities/go-metrics"
 	reporter "github.impcloud.net/RSP-Inventory-Suite/utilities/go-metrics-influxdb"
 )
-
-const schema = `
-CREATE TABLE IF NOT EXISTS skus (
-	id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-	data JSONB	
-);
-
-CREATE UNIQUE INDEX IF NOT EXISTS idx_sku
-ON skus ((data->'sku'));
-`
 
 func main() {
 
@@ -92,7 +82,11 @@ func main() {
 
 	log.WithFields(log.Fields{"Method": "main", "Action": "Start"}).Info("Connecting to database...")
 
-	db, err := dbSetup(config.AppConfig.ConnectionString, "5432", "postgres", "", config.AppConfig.DatabaseName)
+	db, err := dbSetup(config.AppConfig.DbHost,
+		config.AppConfig.DbPort,
+		config.AppConfig.DbUser, config.AppConfig.DbPass,
+		config.AppConfig.DbName,
+	)
 	if err != nil {
 		mDbErr.Update(1)
 		log.WithFields(log.Fields{
@@ -253,7 +247,7 @@ We will transform the data into the following format:
 ]
 
 */
-func dataProcess(jsonBytes []byte, masterDB *sqlx.DB) error {
+func dataProcess(jsonBytes []byte, masterDB *sql.DB) error {
 	// Metrics
 	metrics.GetOrRegisterGauge(`Product-Data.dataProcess.Attempt`, nil).Update(1)
 	mUnmarshalErr := metrics.GetOrRegisterGauge("Product-Data.dataProcess.Unmarshal-Error", nil)
@@ -369,23 +363,23 @@ func receiveZmqEvents(masterDB *sql.DB) {
 						continue
 					}
 
-					// data, err := base64.StdEncoding.DecodeString(read.Value)
-					// if err != nil {
-					// 	log.WithFields(log.Fields{
-					// 		"Method": "receiveZmqEvents",
-					// 		"Action": "product data ingestion",
-					// 		"Error":  err.Error(),
-					// 	}).Error("error decoding base64 value")
-					// 	continue
-					// }
+					data, err := base64.StdEncoding.DecodeString(read.Value)
+					if err != nil {
+						log.WithFields(log.Fields{
+							"Method": "receiveZmqEvents",
+							"Action": "product data ingestion",
+							"Error":  err.Error(),
+						}).Error("error decoding base64 value")
+						continue
+					}
 
-					// if err := dataProcess(data, masterDB); err != nil {
-					// 	log.WithFields(log.Fields{
-					// 		"Method": "receiveZmqEvents",
-					// 		"Action": "product data ingestion",
-					// 		"Error":  err.Error(),
-					// 	}).Error("error processing product data")
-					// }
+					if err := dataProcess(data, masterDB); err != nil {
+						log.WithFields(log.Fields{
+							"Method": "receiveZmqEvents",
+							"Action": "product data ingestion",
+							"Error":  err.Error(),
+						}).Error("error processing product data")
+					}
 
 				}
 
@@ -427,7 +421,7 @@ func setLoggingLevel(loggingLevel string) {
 func dbSetup(host, port, user, password, dbname string) (*sql.DB, error) {
 
 	// Connect to PostgreSQL
-	psqlInfo := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable", host, port, user, password, dbname)
+	psqlInfo := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable", host, port, user, password, dbname)
 
 	db, err := sql.Open("postgres", psqlInfo)
 	if err != nil {
@@ -439,7 +433,7 @@ func dbSetup(host, port, user, password, dbname string) (*sql.DB, error) {
 	}
 
 	// Prepares database schema and indexes
-	db.Exec(schema)
+	db.Exec(productdata.DbSchema)
 
 	return db, nil
 }

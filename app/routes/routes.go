@@ -20,7 +20,6 @@ package routes
 
 import (
 	"database/sql"
-	"net/http"
 
 	"github.com/gorilla/mux"
 
@@ -238,35 +237,6 @@ func NewRouter(db *sql.DB, size int) *mux.Router {
 			"GET",
 			"/productid/{productId}",
 			mapp.GetProductID,
-		},
-		// swagger:route DELETE /skus/{sku} skus deleteSkus
-		//
-		// Deletes SKU data
-		//
-		// This API call is used to delete a sku object with its upcList<br><br>
-		//
-		// Example query:
-		//
-		// <blockquote>/skus/MS122-32</blockquote> <br><br>
-		//
-		//     Consumes:
-		//     - application/json
-		//
-		//     Produces:
-		//     - application/json
-		//
-		//     Schemes: http
-		//
-		//     Responses:
-		//       204: body:resultsResponse
-		//       404: NotFound
-		//       500: internalError
-		//
-		{
-			"DeleteSku",
-			http.MethodDelete,
-			"/skus/{sku}",
-			mapp.DeleteSku,
 		},
 	}
 
