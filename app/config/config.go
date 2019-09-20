@@ -1,6 +1,6 @@
 /*
  * INTEL CONFIDENTIAL
- * Copyright (2016, 2017) Intel Corporation.
+ * Copyright (2019) Intel Corporation.
  *
  * The source code contained or described herein and all documents related to the source code ("Material")
  * are owned by Intel Corporation or its suppliers or licensors. Title to the Material remains with
@@ -27,7 +27,7 @@ import (
 type (
 	variables struct {
 		ServiceName, LoggingLevel, Port, ZeroMQ           string
-		DbHost, DbPort, DbUser, DbPass, DbSslmode, DbName string
+		DbHost, DbPort, DbUser, DbPass, dbSSLmode, DbName string
 		TelemetryEndpoint, TelemetryDataStoreName         string
 		ResponseLimit                                     int
 	}
@@ -65,7 +65,7 @@ func InitConfig() error {
 	AppConfig.DbName, err = config.GetString("dbName")
 	errorHandler(err)
 
-	AppConfig.DbSslmode, err = config.GetString("dbSslmode")
+	AppConfig.dbSSLmode, err = config.GetString("dbSSLmode")
 	errorHandler(err)
 
 	AppConfig.DbPass, err = helper.GetSecret("dbPass")

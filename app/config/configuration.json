@@ -5,7 +5,7 @@
   "dbPass": "",
   "dbPort": "5432",
   "dbName": "postgres",
-  "dbSslmode": "disable",
+  "dbSSLmode": "disable",
   "telemetryEndpoint": "",    
   "zeroMQ": "127.0.0.1:5563",
   "telemetryDataStoreName": "",

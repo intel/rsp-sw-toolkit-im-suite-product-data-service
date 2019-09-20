@@ -211,11 +211,6 @@
     }
   },
   "definitions": {
-    "DB": {
-      "description": "DB is a collection of support for different DB technologies. Currently\nonly MongoDB has been implemented. We want to be able to access the raw\ndatabase support for the given DB so an interface does not work. Each\ndatabase is too different.",
-      "type": "object",
-      "x-go-package": "github.impcloud.net/Responsive-Retail-Inventory/product-data-service/vendor/github.impcloud.net/RSP-Inventory-Suite/go-dbWrapper"
-    },
     "ErrReport": {
       "description": "ErrReport is used to wrap schema validation errors int json object",
       "type": "object",

@@ -1,6 +1,6 @@
 /**
  * INTEL CONFIDENTIAL
- * Copyright (2016, 2017) Intel Corporation.
+ * Copyright (2019) Intel Corporation.
  *
  * The source code contained or described herein and all documents related to the source code ("Material")
  * are owned by Intel Corporation or its suppliers or licensors. Title to the Material remains with
@@ -417,10 +417,13 @@ func dbSetup(host, port, user, password, dbname string) (*sql.DB, error) {
 		return nil, err
 	}
 
-	log.Info("Connected to database...")
+	log.Info("Connected to postgreSQL database...")
 
 	// Prepares database schema and indexes
-	db.Exec(productdata.DbSchema)
+	_, errExec := db.Exec(productdata.DbSchema)
+	if errExec != nil {
+		return nil, errExec
+	}
 
 	return db, nil
 }

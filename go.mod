@@ -19,5 +19,4 @@ require (
 	github.impcloud.net/RSP-Inventory-Suite/go-odata v0.0.0-20190912190850-b474f3d22dce
 	github.impcloud.net/RSP-Inventory-Suite/gojsonschema v0.0.0-20190328202319-524e56ea9f9a // indirect
 	github.impcloud.net/RSP-Inventory-Suite/utilities v0.0.0-20190318223020-7136022498b9
-
 )
