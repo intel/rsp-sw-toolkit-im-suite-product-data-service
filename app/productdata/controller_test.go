@@ -95,14 +95,14 @@ func TestRetrieveCount(t *testing.T) {
 
 	db := dbSetup(t)
 
-	//insertSampleData(masterDb, t)
+	insertSampleData(db, t)
 
 	results, count, err := Retrieve(db, testURL.Query(), 1000)
 	if err != nil {
 		t.Error("Unable to retrieve SKUs")
 	}
-	if results != nil {
-		t.Error("Expected results to be nil, but got something else")
+	if len(results) != 0 {
+		t.Error("Expected results to be 0, but got something else")
 	}
 
 	if count == nil {
@@ -118,14 +118,14 @@ func TestRetrieveCountWithFilterQuery(t *testing.T) {
 
 	db := dbSetup(t)
 
-	//insertSampleData(masterDb, t)
+	insertSampleData(db, t)
 
 	results, count, err := Retrieve(db, testURL.Query(), 1000)
 	if err != nil {
 		t.Errorf("Unable to retrieve SKUs. Error: %s", err.Error())
 	}
 
-	if results != nil {
+	if len(results) != 0 {
 		t.Error("Expected results to be nil, but got something else")
 	}
 
@@ -143,7 +143,7 @@ func TestRetrieveInlinecount(t *testing.T) {
 
 	db := dbSetup(t)
 
-	//insertSampleData(masterDb, t)
+	insertSampleData(db, t)
 
 	results, count, err := Retrieve(db, testURL.Query(), 1000)
 
@@ -180,16 +180,13 @@ func TestRetrieveWithFilter(t *testing.T) {
 
 	db := dbSetup(t)
 
-	//insertSampleData(masterDb, t)
+	insertSampleData(db, t)
 
 	_, _, err = Retrieve(db, testURL.Query(), 1000)
 	if err != nil {
 		t.Errorf("Retrieve failed with error %v", err.Error())
 	}
 
-	// if _, ok := result.([]interface{}); !ok {
-	// 	t.Errorf("Expected []interface{}, but got %T", result)
-	// }
 }
 
 func TestRetrieveSizeLimitWithTop(t *testing.T) {
@@ -204,7 +201,7 @@ func TestRetrieveSizeLimitWithTop(t *testing.T) {
 
 	db := dbSetup(t)
 
-	//insertSampleData(db, t)
+	insertSampleData(db, t)
 
 	results, count, err := Retrieve(db, testURL.Query(), sizeLimit)
 	if err != nil {
@@ -244,7 +241,7 @@ func TestRetrieveWithBadQuery(t *testing.T) {
 
 	db := dbSetup(t)
 
-	//insertSampleData(masterDb, t)
+	insertSampleData(db, t)
 
 	_, _, err = Retrieve(db, testURL.Query(), 1000)
 	if err == nil {

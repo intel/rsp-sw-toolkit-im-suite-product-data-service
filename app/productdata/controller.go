@@ -61,7 +61,7 @@ func Retrieve(db *sql.DB, query url.Values, maxSize int) ([]SKUData, *CountType,
 	countQuery := query["$count"]
 
 	// If only $count is set, return total count of the table
-	if len(countQuery) > 0 && len(query) < 2 {
+	if len(countQuery) > 0 && len(query) == 1 {
 
 		var count int
 
@@ -69,11 +69,11 @@ func Retrieve(db *sql.DB, query url.Values, maxSize int) ([]SKUData, *CountType,
 		err := row.Scan(&count)
 		if err != nil {
 			mCountErr.Update(1)
-			return nil, nil, err
+			return []SKUData{}, nil, err
 		}
 
 		mSuccess.Update(1)
-		return nil, &CountType{Count: count}, nil
+		return []SKUData{}, &CountType{Count: count}, nil
 	}
 
 	// Apply size limit if needed
@@ -81,7 +81,7 @@ func Retrieve(db *sql.DB, query url.Values, maxSize int) ([]SKUData, *CountType,
 
 		topVal, err := strconv.Atoi(query["$top"][0])
 		if err != nil {
-			return nil, nil, web.ValidationError("invalid $top value")
+			return []SKUData{}, nil, web.ValidationError("invalid $top value")
 		}
 
 		if topVal > maxSize {
@@ -100,16 +100,14 @@ func Retrieve(db *sql.DB, query url.Values, maxSize int) ([]SKUData, *CountType,
 	if err != nil {
 		if errors.Cause(err) == odata.ErrInvalidInput {
 			mInputErr.Update(1)
-			return nil, nil, web.InvalidInputError(err)
+			return []SKUData{}, nil, web.InvalidInputError(err)
 		}
-		return nil, nil, errors.Wrap(err, "db.Select")
+		return []SKUData{}, nil, errors.Wrap(err, "db.Select")
 	}
 
 	defer rows.Close()
 
 	prodSlice := make([]SKUData, 0)
-
-	inlineCount := 0
 
 	// Loop through the results and append them to a slice
 	for rows.Next() {
@@ -118,31 +116,26 @@ func Retrieve(db *sql.DB, query url.Values, maxSize int) ([]SKUData, *CountType,
 		err := rows.Scan(&prodDataWrapper.ID, &prodDataWrapper.Data)
 		if err != nil {
 			mRetrieveErr.Update(1)
-			return nil, nil, err
+			return []SKUData{}, nil, err
 		}
 		prodSlice = append(prodSlice, prodDataWrapper.Data)
-		inlineCount++
 
 	}
 	if err = rows.Err(); err != nil {
 		mRetrieveErr.Update(1)
-		return nil, nil, err
+		return []SKUData{}, nil, err
 	}
 	mRetrieveLatency.Update(time.Since(retrieveTimer))
 
 	// Check if $inlinecount or $count is set in combination with $filter
 	isInlineCount := query["$inlinecount"]
 
-	if len(countQuery) > 0 || (len(isInlineCount) > 0 && isInlineCount[0] == "allpages") {
-		if len(isInlineCount) > 0 {
-
-			if isInlineCount[0] == "allpages" {
-				mSuccess.Update(1)
-				return prodSlice, &CountType{Count: inlineCount}, nil
-			}
-		}
+	if len(isInlineCount) > 0 && isInlineCount[0] == "allpages" {
 		mSuccess.Update(1)
-		return nil, &CountType{Count: inlineCount}, nil
+		return prodSlice, &CountType{Count: len(prodSlice)}, nil
+	} else if len(countQuery) > 0 {
+		mSuccess.Update(1)
+		return []SKUData{}, &CountType{Count: len(prodSlice)}, nil
 	}
 
 	mSuccess.Update(1)

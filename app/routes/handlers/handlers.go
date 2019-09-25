@@ -24,7 +24,6 @@ import (
 	"encoding/json"
 	"io"
 	"net/http"
-	"reflect"
 	"strconv"
 	"time"
 
@@ -84,15 +83,9 @@ func (mapp *Mapping) GetSkuMapping(ctx context.Context, writer http.ResponseWrit
 	}
 
 	// we need to check if this is a countType or if it's an array of interfaces
-	if count != nil && results == nil {
+	if count != nil && len(results) == 0 {
 		web.Respond(ctx, writer, count, http.StatusOK)
 		return nil
-	}
-
-	resultSlice := reflect.ValueOf(results)
-
-	if resultSlice.Len() < 1 {
-		results = []productdata.SKUData{} // Return empty array
 	}
 
 	if count != nil && results != nil {
