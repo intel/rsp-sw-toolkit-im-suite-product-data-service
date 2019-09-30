@@ -161,16 +161,21 @@ func (s *SKUData) Scan(value interface{}) error {
 func findAndUpdateSkus(db *sql.DB, skuData *[]SKUData) error {
 
 	var skusList strings.Builder
-	for _, sku := range *skuData {
+	for id, sku := range *skuData {
 		skusList.WriteString(pq.QuoteLiteral(sku.SKU))
+		if len(*skuData) > id+1 {
+			skusList.WriteString(",")
+		}
 	}
 
-	selectQuery := fmt.Sprintf("SELECT %s FROM %s WHERE %s ->> 'sku' IN ($1)",
+	selectQuery := fmt.Sprintf("SELECT %s FROM %s WHERE %s ->> 'sku' IN (%s)",
 		pq.QuoteIdentifier(jsonbColumn),
 		pq.QuoteIdentifier(productDataTable),
-		pq.QuoteIdentifier(jsonbColumn))
+		pq.QuoteIdentifier(jsonbColumn),
+		skusList.String(),
+	)
 
-	rows, err := db.Query(selectQuery, skusList.String())
+	rows, err := db.Query(selectQuery)
 	if err != nil {
 		return err
 	}

@@ -253,7 +253,8 @@ func insertSampleData(db *sql.DB, t *testing.T) []SKUData {
 
 	JSONSample := `[
 		{ "sku":"MS122-32",
-		  "productList": [ {"productId": "889319388921", "becomingReadable": 0.0456, "dailyTurn": 0.0121, "exitError": 0.0789, "metadata": {"color":"blue"} } ]
+		  "productList": [ {"productId": "889319388921", "becomingReadable": 0.0456, "dailyTurn": 0.0121, "exitError": 0.0789, "metadata": {"color":"blue"} },
+		  {"productId": "test", "becomingReadable": 0.0456, "dailyTurn": 0.0121, "exitError": 0.0789, "metadata": {"color":"blue"} }]
 		},
 		{ "sku":"MS122-33",
 			"productList": [ {"productId": "889319388922", "becomingReadable": 0.0456, "beingRead": 0.0123, "dailyTurn": 0.0121, "exitError": 0.0789, "metadata": {"color":"blue"} } ]
