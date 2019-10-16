@@ -180,10 +180,10 @@ We are expecting the data to be passed to us in the following format:
 							{
 								"sku": "12345679",
 								"upc": "123456789783",
-                "beingRead": 0.01,
-                "becomingReadable": 0.02,
-                "exitError": 0.03,
-                "dailyTurn": 0.04
+								"beingRead": 0.01,
+								"becomingReadable": 0.02,
+								"exitError": 0.03,
+								"dailyTurn": 0.04
 								"metadata": {
 									"color":"blue",
 									"size":"XS"
