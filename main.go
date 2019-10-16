@@ -279,8 +279,8 @@ func dataProcess(jsonBytes []byte, masterDB *sql.DB) error {
 				SKU:         item.SKU,
 				ProductList: []productdata.ProductData{productData},
 			}
-			prodDataMap[item.SKU] = skuData
 		}
+		prodDataMap[item.SKU] = skuData
 	}
 
 	// extract the values to a list
