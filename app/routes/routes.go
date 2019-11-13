@@ -1,6 +1,6 @@
 /*
  * INTEL CONFIDENTIAL
- * Copyright (2016, 2017) Intel Corporation.
+ * Copyright (2019) Intel Corporation.
  *
  * The source code contained or described herein and all documents related to the source code ("Material")
  * are owned by Intel Corporation or its suppliers or licensors. Title to the Material remains with
@@ -19,11 +19,10 @@
 package routes
 
 import (
-	"net/http"
+	"database/sql"
 
 	"github.com/gorilla/mux"
 
-	db "github.impcloud.net/RSP-Inventory-Suite/go-dbWrapper"
 	"github.impcloud.net/RSP-Inventory-Suite/product-data-service/app/routes/handlers"
 	"github.impcloud.net/RSP-Inventory-Suite/product-data-service/pkg/middlewares"
 	"github.impcloud.net/RSP-Inventory-Suite/product-data-service/pkg/web"
@@ -38,9 +37,9 @@ type Route struct {
 }
 
 // NewRouter creates the routes for GET and POST
-func NewRouter(masterDB *db.DB, size int) *mux.Router {
+func NewRouter(db *sql.DB, size int) *mux.Router {
 
-	mapp := handlers.Mapping{MasterDB: masterDB, Size: size}
+	mapp := handlers.Mapping{MasterDB: db, Size: size}
 
 	var routes = []Route{
 		// swagger:operation GET / default Healthcheck
@@ -238,35 +237,6 @@ func NewRouter(masterDB *db.DB, size int) *mux.Router {
 			"GET",
 			"/productid/{productId}",
 			mapp.GetProductID,
-		},
-		// swagger:route DELETE /skus/{sku} skus deleteSkus
-		//
-		// Deletes SKU data
-		//
-		// This API call is used to delete a sku object with its upcList<br><br>
-		//
-		// Example query:
-		//
-		// <blockquote>/skus/MS122-32</blockquote> <br><br>
-		//
-		//     Consumes:
-		//     - application/json
-		//
-		//     Produces:
-		//     - application/json
-		//
-		//     Schemes: http
-		//
-		//     Responses:
-		//       204: body:resultsResponse
-		//       404: NotFound
-		//       500: internalError
-		//
-		{
-			"DeleteSku",
-			http.MethodDelete,
-			"/skus/{sku}",
-			mapp.DeleteSku,
 		},
 	}
 

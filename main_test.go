@@ -1,6 +1,6 @@
 /*
  * INTEL CONFIDENTIAL
- * Copyright (2016, 2017) Intel Corporation.
+ * Copyright (2019) Intel Corporation.
  *
  * The source code contained or described herein and all documents related to the source code ("Material")
  * are owned by Intel Corporation or its suppliers or licensors. Title to the Material remains with
@@ -22,13 +22,9 @@ import (
 	"log"
 	"os"
 	"testing"
-	"time"
 
-	db "github.impcloud.net/RSP-Inventory-Suite/go-dbWrapper"
 	"github.impcloud.net/RSP-Inventory-Suite/product-data-service/app/config"
 )
-
-var dbHost string
 
 //nolint :dupl
 func TestMain(m *testing.M) {
@@ -36,8 +32,6 @@ func TestMain(m *testing.M) {
 	if err := config.InitConfig(); err != nil {
 		log.Fatal(err)
 	}
-	dbName := config.AppConfig.DatabaseName
-	dbHost = config.AppConfig.ConnectionString + "/" + dbName
 
 	os.Exit(m.Run())
 
@@ -45,8 +39,14 @@ func TestMain(m *testing.M) {
 
 func TestDataProcess(t *testing.T) {
 
-	masterDb := createDB(t)
-	defer masterDb.Close()
+	db, err := dbSetup(config.AppConfig.DbHost,
+		config.AppConfig.DbPort,
+		config.AppConfig.DbUser, config.AppConfig.DbPass,
+		config.AppConfig.DbName,
+	)
+	if err != nil {
+		t.Fatal("Unable to connect to database")
+	}
 
 	JSONSample := []byte(`
 				 [
@@ -61,7 +61,7 @@ func TestDataProcess(t *testing.T) {
 									"color":"blue",
 									"size":"XS"
 								}
-							
+
 							},
 							{
 								"sku": "12345679",
@@ -82,16 +82,7 @@ func TestDataProcess(t *testing.T) {
 							}
 						]`)
 
-	if err := dataProcess(JSONSample, masterDb); err != nil {
+	if err := dataProcess(JSONSample, db); err != nil {
 		t.Fatalf("error processing product data: %+v", err)
 	}
-}
-
-func createDB(t *testing.T) *db.DB {
-	masterDb, err := db.NewSession(dbHost, 1*time.Second)
-	if err != nil {
-		t.Fatalf("Unable to connect to db server: %+v", err)
-	}
-
-	return masterDb
 }

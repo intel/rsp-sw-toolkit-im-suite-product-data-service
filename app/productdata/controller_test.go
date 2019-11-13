@@ -1,6 +1,6 @@
 /*
  * INTEL CONFIDENTIAL
- * Copyright (2016, 2017) Intel Corporation.
+ * Copyright (2019) Intel Corporation.
  *
  * The source code contained or described herein and all documents related to the source code ("Material")
  * are owned by Intel Corporation or its suppliers or licensors. Title to the Material remains with
@@ -19,45 +19,34 @@
 package productdata
 
 import (
+	"database/sql"
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
 	"net/url"
 	"os"
-	"reflect"
 	"strconv"
 	"testing"
-	"time"
 
 	"github.impcloud.net/RSP-Inventory-Suite/product-data-service/app/config"
 	"github.impcloud.net/RSP-Inventory-Suite/product-data-service/pkg/web"
-	db "github.impcloud.net/RSP-Inventory-Suite/go-dbWrapper"
 )
 
-var dbHost string
-
-//nolint :dupl
 func TestMain(m *testing.M) {
+
 	if err := config.InitConfig(); err != nil {
 		log.Fatal(err)
 	}
 
-	dbName := config.AppConfig.DatabaseName
-	dbHost = config.AppConfig.ConnectionString + "/" + dbName
-
 	os.Exit(m.Run())
 
 }
-
 func TestInsertSkuMapping(t *testing.T) {
 
-	masterDb, err := db.NewSession(dbHost, 5*time.Second)
-	if err != nil {
-		t.Error("Unable to connect to db")
-	}
-	defer masterDb.Close()
+	db := dbSetup(t)
 
-	expectedMappings := insertSampleData(masterDb, t)
+	expectedMappings := insertSampleData(db, t)
 
 	if expectedMappings == nil {
 		t.Error("Unable to insert data")
@@ -66,16 +55,8 @@ func TestInsertSkuMapping(t *testing.T) {
 
 func TestInsertDuplicateProductIDsSKUMapping(t *testing.T) {
 
-	masterDb, err := db.NewSession(dbHost, 5*time.Second)
-	if err != nil {
-		t.Error("Unable to connect to db")
-	}
-	defer masterDb.Close()
-
-	copySession := masterDb.CopySession()
-	defer copySession.Close()
-
-	expectedMappings := insertSampleDuplicateData(masterDb, t)
+	db := dbSetup(t)
+	expectedMappings := insertSampleDuplicateData(db, t)
 
 	if expectedMappings == nil {
 		t.Error("Unable to insert data")
@@ -86,7 +67,7 @@ func TestInsertDuplicateProductIDsSKUMapping(t *testing.T) {
 		t.Error("Failed to parse test URL")
 	}
 
-	result, _, err := Retrieve(copySession, testURL.Query(), 100)
+	result, _, err := Retrieve(db, testURL.Query(), 100)
 	if err != nil {
 		t.Fatalf("Error reteiving SKUs: %s", err.Error())
 	}
@@ -112,20 +93,16 @@ func TestRetrieveCount(t *testing.T) {
 		t.Error("Failed to parse test URL")
 	}
 
-	masterDb := createDB(t)
-	defer masterDb.Close()
+	db := dbSetup(t)
 
-	copySession := masterDb.CopySession()
-	defer copySession.Close()
+	insertSampleData(db, t)
 
-	insertSampleData(masterDb, t)
-
-	results, count, err := Retrieve(copySession, testURL.Query(), 1000)
+	results, count, err := Retrieve(db, testURL.Query(), 1000)
 	if err != nil {
 		t.Error("Unable to retrieve SKUs")
 	}
-	if results != nil {
-		t.Error("Expected results to be nil, but got something else")
+	if len(results) != 0 {
+		t.Error("Expected results to be 0, but got something else")
 	}
 
 	if count == nil {
@@ -139,20 +116,16 @@ func TestRetrieveCountWithFilterQuery(t *testing.T) {
 		t.Error("Failed to parse test URL")
 	}
 
-	masterDb := createDB(t)
-	defer masterDb.Close()
+	db := dbSetup(t)
 
-	copySession := masterDb.CopySession()
-	defer copySession.Close()
+	insertSampleData(db, t)
 
-	insertSampleData(masterDb, t)
-
-	results, count, err := Retrieve(copySession, testURL.Query(), 1000)
+	results, count, err := Retrieve(db, testURL.Query(), 1000)
 	if err != nil {
-		t.Error("Unable to retrieve SKUs")
+		t.Errorf("Unable to retrieve SKUs. Error: %s", err.Error())
 	}
 
-	if results != nil {
+	if len(results) != 0 {
 		t.Error("Expected results to be nil, but got something else")
 	}
 
@@ -168,15 +141,11 @@ func TestRetrieveInlinecount(t *testing.T) {
 		t.Error("failed to parse test url")
 	}
 
-	masterDb := createDB(t)
-	defer masterDb.Close()
+	db := dbSetup(t)
 
-	insertSampleData(masterDb, t)
+	insertSampleData(db, t)
 
-	copySession := masterDb.CopySession()
-	defer copySession.Close()
-
-	results, count, err := Retrieve(copySession, testURL.Query(), 1000)
+	results, count, err := Retrieve(db, testURL.Query(), 1000)
 
 	if count == nil {
 		t.Error("expecting inlinecount result")
@@ -209,22 +178,15 @@ func TestRetrieveWithFilter(t *testing.T) {
 		t.Error("Failed to parse test URL")
 	}
 
-	masterDb := createDB(t)
-	defer masterDb.Close()
+	db := dbSetup(t)
 
-	copySession := masterDb.CopySession()
-	defer copySession.Close()
+	insertSampleData(db, t)
 
-	insertSampleData(masterDb, t)
-
-	result, _, err := Retrieve(copySession, testURL.Query(), 1000)
+	_, _, err = Retrieve(db, testURL.Query(), 1000)
 	if err != nil {
 		t.Errorf("Retrieve failed with error %v", err.Error())
 	}
 
-	if _, ok := result.([]interface{}); !ok {
-		t.Errorf("Expected []interface{}, but got %T", result)
-	}
 }
 
 func TestRetrieveSizeLimitWithTop(t *testing.T) {
@@ -237,22 +199,16 @@ func TestRetrieveSizeLimitWithTop(t *testing.T) {
 		t.Error("Failed to parse test URL")
 	}
 
-	masterDb := createDB(t)
-	defer masterDb.Close()
+	db := dbSetup(t)
 
-	copySession := masterDb.CopySession()
-	defer copySession.Close()
+	insertSampleData(db, t)
 
-	insertSampleData(masterDb, t)
-
-	results, count, err := Retrieve(copySession, testURL.Query(), sizeLimit)
+	results, count, err := Retrieve(db, testURL.Query(), sizeLimit)
 	if err != nil {
 		t.Errorf("Retrieve failed with error %v", err.Error())
 	}
 
-	resultSlice := reflect.ValueOf(results)
-
-	if resultSlice.Len() > sizeLimit {
+	if len(results) > sizeLimit {
 		t.Errorf("Error retrieving results with size limit. Expected: %d , received: %d", sizeLimit, count.Count)
 	}
 
@@ -268,13 +224,9 @@ func TestRetrieveSizeLimitInvalidTop(t *testing.T) {
 		t.Error("Failed to parse test URL")
 	}
 
-	masterDb := createDB(t)
-	defer masterDb.Close()
+	db := dbSetup(t)
 
-	copySession := masterDb.CopySession()
-	defer copySession.Close()
-
-	_, _, err = Retrieve(copySession, testURL.Query(), sizeLimit)
+	_, _, err = Retrieve(db, testURL.Query(), sizeLimit)
 	if err == nil {
 		t.Errorf("Expecting an error for invalid $top value")
 	}
@@ -287,40 +239,22 @@ func TestRetrieveWithBadQuery(t *testing.T) {
 		t.Error("Failed to parse test URL")
 	}
 
-	masterDb := createDB(t)
-	defer masterDb.Close()
+	db := dbSetup(t)
 
-	copySession := masterDb.CopySession()
-	defer copySession.Close()
+	insertSampleData(db, t)
 
-	insertSampleData(masterDb, t)
-
-	_, _, err = Retrieve(copySession, testURL.Query(), 1000)
+	_, _, err = Retrieve(db, testURL.Query(), 1000)
 	if err == nil {
-		t.Error("Expected an error, but Retrieve returned a value")
+		t.Error("Expected an error, but Retrieve function returned a value")
 	}
 }
 
-func TestRetrieveWithNoDb(t *testing.T) {
-	testURL, err := url.Parse("http://localhost/test?$filter=name eq 'asdf'")
-	if err != nil {
-		t.Error("Failed to parse test URL")
-	}
-
-	_, _, err = Retrieve(nil, testURL.Query(), 1000)
-	if err == nil {
-		t.Error("Expected an error, but Retrieve returned a value")
-	}
-}
-
-func insertSampleData(db *db.DB, t *testing.T) []SKUData {
-
-	copySession := db.CopySession()
-	defer copySession.Close()
+func insertSampleData(db *sql.DB, t *testing.T) []SKUData {
 
 	JSONSample := `[
 		{ "sku":"MS122-32",
-		  "productList": [ {"productId": "889319388921", "becomingReadable": 0.0456, "dailyTurn": 0.0121, "exitError": 0.0789, "metadata": {"color":"blue"} } ]
+		  "productList": [ {"productId": "889319388921", "becomingReadable": 0.0456, "dailyTurn": 0.0121, "exitError": 0.0789, "metadata": {"color":"blue"} },
+		  {"productId": "test", "becomingReadable": 0.0456, "dailyTurn": 0.0121, "exitError": 0.0789, "metadata": {"color":"blue"} }]
 		},
 		{ "sku":"MS122-33",
 			"productList": [ {"productId": "889319388922", "becomingReadable": 0.0456, "beingRead": 0.0123, "dailyTurn": 0.0121, "exitError": 0.0789, "metadata": {"color":"blue"} } ]
@@ -336,26 +270,23 @@ func insertSampleData(db *db.DB, t *testing.T) []SKUData {
 		t.Fatal("Not able to Unmarshal JSON object: " + err.Error())
 	}
 
-	if err := Insert(copySession, expectedMappings); err != nil {
-		t.Error("Not able to insert into mongodb: " + err.Error())
+	if err := Insert(db, expectedMappings); err != nil {
+		t.Error("Not able to insert into database: " + err.Error())
 	}
 
 	return expectedMappings
 }
 
-func insertSampleDuplicateData(db *db.DB, t *testing.T) []SKUData {
-
-	copySession := db.CopySession()
-	defer copySession.Close()
+func insertSampleDuplicateData(db *sql.DB, t *testing.T) []SKUData {
 
 	JSONSample := `[
 		{ "sku":"DuplicateSku",
-		  "productList": [ 
+		  "productList": [
 				{"productId": "889319388921", "metadata": {"color":"blue"} },
 				{"productId": "889319388921", "metadata": {"color":"blue"} },
 				{"productId": "889319388921", "metadata": {"color":"blue"} }
 			]
-		}	
+		}
 	]`
 
 	var expectedMappings []SKUData
@@ -364,8 +295,8 @@ func insertSampleDuplicateData(db *db.DB, t *testing.T) []SKUData {
 		t.Fatal("Not able to Unmarshal JSON object: " + err.Error())
 	}
 
-	if err := Insert(copySession, expectedMappings); err != nil {
-		t.Error("Not able to insert into mongodb: " + err.Error())
+	if err := Insert(db, expectedMappings); err != nil {
+		t.Error("Not able to insert into database: " + err.Error())
 	}
 
 	return expectedMappings
@@ -386,11 +317,7 @@ func TestRemoveDuplicateProductID(t *testing.T) {
 }
 
 func TestBulkInsert(t *testing.T) {
-	masterDb := createDB(t)
-	defer masterDb.Close()
-
-	copySession := masterDb.CopySession()
-	defer copySession.Close()
+	db := dbSetup(t)
 
 	expectedMappings := make([]SKUData, 600)
 
@@ -400,29 +327,34 @@ func TestBulkInsert(t *testing.T) {
 		expectedMappings[i] = mapObj
 	}
 
-	if err := Insert(copySession, expectedMappings); err != nil {
-		t.Error("Not able to insert into mongodb: " + err.Error())
+	if err := Insert(db, expectedMappings); err != nil {
+		t.Error("Not able to insert into database: " + err.Error())
 	}
 
 }
 
-func createDB(t *testing.T) *db.DB {
-	masterDb, err := db.NewSession(dbHost, 10*time.Second)
-	if err != nil {
-		t.Fatal("Unable to connect to db server")
-	}
+func dbSetup(t *testing.T) *sql.DB {
 
-	return masterDb
+	// Connect to PostgreSQL
+	psqlInfo := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable", config.AppConfig.DbHost,
+		config.AppConfig.DbPort,
+		config.AppConfig.DbUser, config.AppConfig.DbPass,
+		config.AppConfig.DbName)
+
+	db, err := sql.Open("postgres", psqlInfo)
+	if err != nil {
+		t.Fatal(err)
+	}
+	// Create table
+	db.Exec(DbSchema)
+
+	return db
 }
 
 func TestGetProductIDMetadataNotFound(t *testing.T) {
-	masterDb := createDB(t)
-	defer masterDb.Close()
+	db := dbSetup(t)
 
-	copySession := masterDb.CopySession()
-	defer copySession.Close()
-
-	result, err := GetProductMetadata(copySession, "00000000000000")
+	result, err := GetProductMetadata(db, "00000000000000")
 	if err != nil {
 		if common, ok := err.(web.CommonError); !ok || common.Code != http.StatusNotFound {
 			t.Errorf("Retrieve failed with error %+v", err)
@@ -435,16 +367,12 @@ func TestGetProductIDMetadataNotFound(t *testing.T) {
 }
 
 func TestGetProductIDMetadataFound(t *testing.T) {
-	masterDb := createDB(t)
-	defer masterDb.Close()
+	db := dbSetup(t)
 
-	copySession := masterDb.CopySession()
-	defer copySession.Close()
-
-	InsertSampleProductMetadata(masterDb, t)
+	InsertSampleProductMetadata(db, t)
 
 	productID := "12345678912345"
-	result, err := GetProductMetadata(copySession, productID)
+	result, err := GetProductMetadata(db, productID)
 	if err != nil {
 		t.Errorf("Retrieve failed with error %+v", err)
 	}
@@ -463,16 +391,13 @@ func TestGetProductIDMetadataFound(t *testing.T) {
 	}
 }
 
-func InsertSampleProductMetadata(db *db.DB, t *testing.T) []SKUData {
-
-	copySession := db.CopySession()
-	defer copySession.Close()
+func InsertSampleProductMetadata(db *sql.DB, t *testing.T) []SKUData {
 
 	JSONSample := `[
-		{ "sku":"MS122-33", "name":"mens formal pants",  
+		{ "sku":"MS122-33", "name":"mens formal pants",
 		  "productList": [ {"productId": "12345678912345", "metadata": {"color":"blue"} } ]
 		},
-		{ "sku":"MS122-34", "name":"mens formal pants",  
+		{ "sku":"MS122-34", "name":"mens formal pants",
 			"productList": [ {"productId": "12345678912346", "metadata": {"color":"blue"} } ]
 		}
 	]`
@@ -483,8 +408,8 @@ func InsertSampleProductMetadata(db *db.DB, t *testing.T) []SKUData {
 		t.Fatal("Not able to Unmarshal JSON object: " + err.Error())
 	}
 
-	if err := Insert(copySession, expectedMappings); err != nil {
-		t.Error("Not able to insert into mongodb: " + err.Error())
+	if err := Insert(db, expectedMappings); err != nil {
+		t.Error("Not able to insert into database: " + err.Error())
 	}
 
 	return expectedMappings

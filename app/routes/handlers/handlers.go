@@ -1,6 +1,6 @@
 /*
  * INTEL CONFIDENTIAL
- * Copyright (2016, 2017) Intel Corporation.
+ * Copyright (2019) Intel Corporation.
  *
  * The source code contained or described herein and all documents related to the source code ("Material")
  * are owned by Intel Corporation or its suppliers or licensors. Title to the Material remains with
@@ -20,16 +20,15 @@ package handlers
 
 import (
 	"context"
+	"database/sql"
 	"encoding/json"
 	"io"
 	"net/http"
-	"reflect"
 	"strconv"
 	"time"
 
 	"github.com/gorilla/mux"
-	db "github.impcloud.net/RSP-Inventory-Suite/go-dbWrapper"
-	"github.impcloud.net/RSP-Inventory-Suite/gojsonschema"
+	"github.com/xeipuuv/gojsonschema"
 	"github.impcloud.net/RSP-Inventory-Suite/product-data-service/app/productdata"
 	"github.impcloud.net/RSP-Inventory-Suite/product-data-service/pkg/web"
 	"github.impcloud.net/RSP-Inventory-Suite/utilities/go-metrics"
@@ -37,7 +36,7 @@ import (
 
 // Mapping represents the User API method handler set.
 type Mapping struct {
-	MasterDB *db.DB
+	MasterDB *sql.DB
 	Size     int
 }
 
@@ -70,31 +69,23 @@ type ErrReport struct {
 // 200 OK
 // nolint: unparam
 func (mapp *Mapping) Index(ctx context.Context, writer http.ResponseWriter, request *http.Request) error {
-	web.Respond(ctx, writer, "Mapping sku Service", http.StatusOK)
+	web.Respond(ctx, writer, "Product Data Service", http.StatusOK)
 	return nil
 }
 
 // GetSkuMapping retrieves sku mapping list
 // 200 OK, 400 Bad Request, 500 Internal Error
 func (mapp *Mapping) GetSkuMapping(ctx context.Context, writer http.ResponseWriter, request *http.Request) error {
-	copySession := mapp.MasterDB.CopySession()
-	defer copySession.Close()
 
-	results, count, err := productdata.Retrieve(copySession, request.URL.Query(), mapp.Size)
+	results, count, err := productdata.Retrieve(mapp.MasterDB, request.URL.Query(), mapp.Size)
 	if err != nil {
 		return web.InvalidInputError(err)
 	}
 
 	// we need to check if this is a countType or if it's an array of interfaces
-	if count != nil && results == nil {
+	if count != nil && len(results) == 0 {
 		web.Respond(ctx, writer, count, http.StatusOK)
 		return nil
-	}
-
-	resultSlice := reflect.ValueOf(results)
-
-	if resultSlice.Len() < 1 {
-		results = []interface{}{} // Return empty array
 	}
 
 	if count != nil && results != nil {
@@ -108,9 +99,6 @@ func (mapp *Mapping) GetSkuMapping(ctx context.Context, writer http.ResponseWrit
 // PostSkuMapping maps SKU
 // 200 OK, 500 Internal Error
 func (mapp *Mapping) PostSkuMapping(ctx context.Context, writer http.ResponseWriter, request *http.Request) error {
-
-	copySession := mapp.MasterDB.CopySession()
-	defer copySession.Close()
 
 	mappings := productdata.Root{}
 
@@ -162,7 +150,7 @@ func (mapp *Mapping) PostSkuMapping(ctx context.Context, writer http.ResponseWri
 		return web.InvalidInputError(err)
 	}
 
-	if err := productdata.Insert(copySession, mappings.Data); err != nil {
+	if err := productdata.Insert(mapp.MasterDB, mappings.Data); err != nil {
 		return err
 	}
 
@@ -173,14 +161,12 @@ func (mapp *Mapping) PostSkuMapping(ctx context.Context, writer http.ResponseWri
 // GetProductID returns upc with metadata
 // 200 OK, 400 Bad Request,  404 Not Found, 500 Internal Error
 func (mapp *Mapping) GetProductID(ctx context.Context, writer http.ResponseWriter, request *http.Request) error {
-	metrics.GetOrRegisterGauge("Mapping-SKU.GetProductID.Attempt", nil).Update(1)
-	startTime := time.Now()
-	defer metrics.GetOrRegisterTimer("Mapping-SKU.GetProductID.Latency", nil).Update(time.Since(startTime))
-	mSuccess := metrics.GetOrRegisterGauge("Mapping-SKU.GetProductID.Success", nil)
-	mGetProductMetadataErr := metrics.GetOrRegisterGauge("Mapping-SKU.GetProductID.GetProductMetadataError", nil)
 
-	copySession := mapp.MasterDB.CopySession()
-	defer copySession.Close()
+	metrics.GetOrRegisterGauge("Product-Data.GetProductID.Attempt", nil).Update(1)
+	startTime := time.Now()
+	defer metrics.GetOrRegisterTimer("Product-Data.GetProductID.Latency", nil).Update(time.Since(startTime))
+	mSuccess := metrics.GetOrRegisterGauge("Product-Data.GetProductID.Success", nil)
+	mGetProductMetadataErr := metrics.GetOrRegisterGauge("Product-Data.GetProductID.GetProductMetadataError", nil)
 
 	vars := mux.Vars(request)
 	productId := vars["productId"]
@@ -190,7 +176,7 @@ func (mapp *Mapping) GetProductID(ctx context.Context, writer http.ResponseWrite
 		return err
 	}
 
-	prodData, err := productdata.GetProductMetadata(copySession, productId)
+	prodData, err := productdata.GetProductMetadata(mapp.MasterDB, productId)
 	if err != nil {
 		if web.IsNotFoundError(err) {
 			mGetProductMetadataErr.Update(1)
@@ -202,34 +188,6 @@ func (mapp *Mapping) GetProductID(ctx context.Context, writer http.ResponseWrite
 
 	mSuccess.Update(1)
 	web.Respond(ctx, writer, prodData.ProductList[0], http.StatusOK)
-	return nil
-}
-
-// DeleteSku -- Deletes a sku mapping
-// 204 No Contnet, 400 Bad Request,  404 Not Found, 500 Internal Error
-func (mapp *Mapping) DeleteSku(ctx context.Context, writer http.ResponseWriter, request *http.Request) error {
-	metrics.GetOrRegisterGauge("Mapping-SKU.DeleteSku.Attempt", nil).Update(1)
-	startTime := time.Now()
-	defer metrics.GetOrRegisterTimer("Mapping-SKU.DeleteSku.Latency", nil).Update(time.Since(startTime))
-	mDeleteSkuNotFoundErr := metrics.GetOrRegisterGauge("Mapping-SKU.DeleteSku.DeleteSkuNotFoundErr", nil)
-	mSuccess := metrics.GetOrRegisterGauge("Mapping-SKU.DeleteSku.Success", nil)
-	copySession := mapp.MasterDB.CopySession()
-	defer copySession.Close()
-	vars := mux.Vars(request)
-	sku := vars["sku"]
-
-	err := productdata.Delete(copySession, sku)
-	if err != nil {
-		if web.IsNotFoundError(err) {
-			mDeleteSkuNotFoundErr.Update(1)
-			web.Respond(ctx, writer, nil, http.StatusNotFound)
-			return nil
-		}
-		return err
-	}
-	mSuccess.Update(1)
-	web.Respond(ctx, writer, nil, http.StatusNoContent)
-
 	return nil
 }
 

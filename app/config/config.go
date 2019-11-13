@@ -1,6 +1,6 @@
 /*
  * INTEL CONFIDENTIAL
- * Copyright (2016, 2017) Intel Corporation.
+ * Copyright (2019) Intel Corporation.
  *
  * The source code contained or described herein and all documents related to the source code ("Material")
  * are owned by Intel Corporation or its suppliers or licensors. Title to the Material remains with
@@ -19,7 +19,6 @@
 package config
 
 import (
-	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 	"github.impcloud.net/RSP-Inventory-Suite/utilities/configuration"
 	"github.impcloud.net/RSP-Inventory-Suite/utilities/helper"
@@ -27,9 +26,10 @@ import (
 
 type (
 	variables struct {
-		ServiceName, ConnectionString, DatabaseName, LoggingLevel, Port string
-		TelemetryEndpoint, TelemetryDataStoreName                       string
-		ResponseLimit                                                   int
+		ServiceName, LoggingLevel, Port, ZeroMQ           string
+		DbHost, DbPort, DbUser, DbPass, dbSSLmode, DbName string
+		TelemetryEndpoint, TelemetryDataStoreName         string
+		ResponseLimit                                     int
 	}
 )
 
@@ -44,46 +44,51 @@ func InitConfig() error {
 	var err error
 
 	config, err := configuration.NewConfiguration()
-	if err != nil {
-		return errors.Wrapf(err, "Unable to load config variables: %s", err.Error())
-	}
+	errorHandler(err)
 
 	AppConfig.ServiceName, err = config.GetString("serviceName")
 	errorHandler(err)
 
 	// size limit of RESTFul endpoints
 	AppConfig.ResponseLimit, err = config.GetInt("responseLimit")
-	if err != nil {
-		return errors.Wrapf(err, "Unable to load config variables: %s", err.Error())
-	}
-
-	AppConfig.DatabaseName, err = config.GetString("databaseName")
 	errorHandler(err)
 
-	AppConfig.ConnectionString, err = helper.GetSecret("connectionString")
+	AppConfig.DbHost, err = config.GetString("dbHost")
+	errorHandler(err)
+
+	AppConfig.DbPort, err = config.GetString("dbPort")
+	errorHandler(err)
+
+	AppConfig.DbUser, err = config.GetString("dbUser")
+	errorHandler(err)
+
+	AppConfig.DbName, err = config.GetString("dbName")
+	errorHandler(err)
+
+	AppConfig.dbSSLmode, err = config.GetString("dbSSLmode")
+	errorHandler(err)
+
+	AppConfig.DbPass, err = helper.GetSecret("dbPass")
 	if err != nil {
-		AppConfig.ConnectionString, err = config.GetString("connectionString")
+		AppConfig.DbPass, err = config.GetString("dbPass")
 		errorHandler(err)
 	}
 
+	// Webserver port
 	AppConfig.Port, err = config.GetString("port")
 	errorHandler(err)
 
-	// Set "debug" for development purposes. Nil for Production.
 	AppConfig.LoggingLevel, err = config.GetString("loggingLevel")
-	if err != nil {
-		return errors.Wrapf(err, "Unable to load config variables: %s", err.Error())
-	}
+	errorHandler(err)
 
 	AppConfig.TelemetryEndpoint, err = config.GetString("telemetryEndpoint")
-	if err != nil {
-		return errors.Wrapf(err, "Unable to load config variables: %s", err.Error())
-	}
+	errorHandler(err)
 
 	AppConfig.TelemetryDataStoreName, err = config.GetString("telemetryDataStoreName")
-	if err != nil {
-		return errors.Wrapf(err, "Unable to load config variables: %s", err.Error())
-	}
+	errorHandler(err)
+
+	AppConfig.ZeroMQ, err = config.GetString("zeroMQ")
+	errorHandler(err)
 
 	return nil
 }

@@ -148,7 +148,7 @@
 //
 // + `contextSdk`  			- Host and port number for the Context Broker
 //
-// + `connectionString`  	- Host and port number for the Database connection
+// + `dbHost`  	- Host and port number for the Database connection
 //
 // ## __Known services this service depends on:__
 // + context-broker
