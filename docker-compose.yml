@@ -27,6 +27,8 @@ services:
 
   postgres-inventory:
     image: postgres:11-alpine
+    ports:
+      - "5432:5432"
     networks:
      main-net:
     logging:

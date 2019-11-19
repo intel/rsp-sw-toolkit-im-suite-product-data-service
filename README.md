@@ -36,3 +36,50 @@ cd product-data-service
 sudo make build
 sudo make deploy
 ```
+
+### Incoming Schema ###
+```
+[
+    {
+        "exitError":0.0789,
+        "becomingReadable":0.0456,
+        "beingRead":0,
+        "dailyTurn":0.0121,
+        "upc":"889319388921",        
+        "sku":"11889966"
+        "metadata": {
+			"color":"red"			
+		}
+    }
+]
+```
+
+### Endpoint ###
+
+```
+GET http://127.0.0.1:8080/skus
+```
+
+#### Results ####
+```
+{
+    "results": [
+        {
+            "sku": "11889966",
+            "productList": [
+                {
+                    "productId": "889319388921",
+                    "beingRead": 0,
+                    "becomingReadable": 0.0456,
+                    "exitError": 0.0789,
+                    "dailyTurn": 0.0121,
+                    "metadata": {
+                        "color": "red"
+                    }
+                }
+            ]
+        }
+    ]
+}
+```
+
