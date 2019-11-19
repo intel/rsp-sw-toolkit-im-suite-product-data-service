@@ -5,11 +5,7 @@ ENV GO111MODULE=on
 RUN echo http://nl.alpinelinux.org/alpine/v3.6/main > /etc/apk/repositories; \
     echo http://nl.alpinelinux.org/alpine/v3.6/community >> /etc/apk/repositories
 
-RUN apk add --no-cache linux-headers gcc musl-dev git zeromq zeromq-dev libsodium-dev pkgconfig build-base bash && \
-    apk add --no-cache \
-        --virtual=.build-dependencies &&\
-    ln -s locale.h /usr/include/xlocale.h && \
-    rm /usr/include/xlocale.h
+RUN apk add --no-cache musl-dev git zeromq zeromq-dev libsodium-dev bash gcc
 
 # Authentication needed to pull git modules from github.impcloud.net
 RUN git config --global credential.helper store

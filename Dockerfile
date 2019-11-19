@@ -3,7 +3,7 @@ FROM alpine:3.7 as builder
 RUN echo http://nl.alpinelinux.org/alpine/v3.7/main > /etc/apk/repositories; \
     echo http://nl.alpinelinux.org/alpine/v3.7/community >> /etc/apk/repositories
     
-RUN apk --no-cache add zeromq util-linux curl
+RUN apk --no-cache add zeromq curl
 
 RUN mkdir -p /rootfs/curl
 
@@ -33,8 +33,8 @@ COPY --from=builder /usr/lib/libcrypto.so.42.0.0 /usr/lib/
 COPY --from=builder /usr/bin/curl /usr/bin/
 COPY --from=builder /rootfs/curl /
 
-ADD product-data-service /
-ADD res/docker/ /res
+COPY product-data-service /
+COPY res/docker/ /res
 
 ARG GIT_COMMIT=unspecified
 LABEL git_commit=$GIT_COMMIT
