@@ -58,7 +58,7 @@ services:
       options: {max-file: '5', max-size: 100m}
     environment:       
       port: "8080"         
-      loggingLevel: "info"
+      loggingLevel: "debug"
       dbHost: "postgres-inventory"
       dbUser: "postgres"
       dbPass: ""

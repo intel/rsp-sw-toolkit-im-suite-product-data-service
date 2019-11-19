@@ -48,8 +48,8 @@ sudo make deploy
         "upc":"889319388921",        
         "sku":"11889966"
         "metadata": {
-			"color":"red"			
-		}
+            "color":"red"			
+        }
     }
 ]
 ```
@@ -83,3 +83,33 @@ GET http://127.0.0.1:8080/skus
 }
 ```
 
+### OData example ###
+
+```
+GET http://127.0.0.1:8080/skus?$filter=sku eq '123ABC'
+```
+
+#### Results ####
+```
+{
+    "results": [
+        {
+            "sku": "123ABC",
+            "productList": [
+                {
+                    "productId": "889319388921",
+                    "beingRead": 0,
+                    "becomingReadable": 0.0456,
+                    "exitError": 0.0789,
+                    "dailyTurn": 0.0121,
+                    "metadata": {
+                        "color": "red"
+                    }
+                }
+            ]
+        }
+    ]
+}
+```
+
+For more information about odata, visit [OData.org](https://www.odata.org/) and [go-odata](https://github.impcloud.net/RSP-Inventory-Suite/go-odata)
