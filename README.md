@@ -1,7 +1,7 @@
 # Intel® Inventory Suite product-data-service
 [![license](https://img.shields.io/badge/license-Apache%20v2.0-blue.svg)](LICENSE)
 
-Product data service is a microservice for the Intel® Inventory Suite and provides persistence and retrieval for enterprise data. 
+Product data service is a microservice in the Intel® Inventory Suite that provides persistence and retrieval for enterprise data. 
 Enterprise data is ingested through EdgeX platform and consumed by product data service using EdgeX's app functions SDK.
 Product data service transforms and persists enterprise data in PostgreSQL and exposes RESTfUl APIs to retrieve data using odata protocol.
 
@@ -37,7 +37,7 @@ sudo make build
 sudo make deploy
 ```
 
-### Incoming Schema ###
+### Incoming Schema example ###
 ```
 [
     {
