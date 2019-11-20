@@ -113,3 +113,7 @@ GET http://127.0.0.1:8080/skus?$filter=sku eq '123ABC'
 ```
 
 For more information about odata, visit [OData.org](https://www.odata.org/) and [go-odata](https://github.impcloud.net/RSP-Inventory-Suite/go-odata)
+
+### API Documentation ###
+
+Go to [https://editor.swagger.io](https://editor.swagger.io) and import product-data-service.yml file.
