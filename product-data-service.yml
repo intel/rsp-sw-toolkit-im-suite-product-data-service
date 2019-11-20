@@ -1,0 +1,388 @@
+consumes:
+  - application/json
+produces:
+  - application/json
+schemes:
+  - http
+  - https
+swagger: '2.0'
+info:
+  description: "Retailers typically refer to inventory based on SKU. This product data service provides the necessary enterprise data to properly\nidentify products in our system to notify Retailers of events that occur. Endpoints are provided for uploading SKU/UPC mapping\ndata along with all associated metadata (ie. size, color, model) into the system. RFID sensed inventory is read from item tags (EPCs)\nwhich then get converted to UPCs.\n\n__Known services this service depends on:__\n\n○ PostgreSQL\n\n○ EdgeX Core Data\n\n###__Configuration file values__\n+ `serviceName`  \t\t\t\t - Runtime name of the service\n\n+ `dbHost`  \t\t\t\t - hostname of PostgreSQL database\n\n+ `dbUser`  \t\t\t\t - username of PostgreSQL database\n\n+ `dbPass`  \t\t\t\t - password of PostgreSQL database\n\n+ `dbPort`  \t\t\t\t - port of PostgreSQL database\n\n+ `dbName`  \t\t\t\t - Name of PostgreSQL database\n\n+ `dbSSLmode`  \t\t\t\t - type of security of PostgreSQL database\n\n+ `loggingLevel`  \t\t\t\t - Logging level to use: \"info\" (default) or \"debug\" (verbose)\n\n+ `telemetryEndpoint`  \t\t\t\t - URL of the telemetry service receiving the metrics from the service\n\n+ `telemetryDataStoreName`  \t\t - Name of the data store in the telemetry service to store the metrics\n\n+ `port`  \t\t\t\t\t\t - Port to run the service/s HTTP Server on\n\n+ `responseLimit`  \t\t\t\t - Default limit to what can be returned in a GET call - because of this, client must define their own top-skip functionality\n\nCopyright 2019 Intel® Corporation, All rights reserved."
+  title: Product Data API.
+  version: 1.0.0
+host: 'product-data:8080'
+basePath: /
+paths:
+  /:
+    get:
+      description: >-
+        Endpoint that is used to determine if the application is ready to take
+        web requests
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      schemes:
+        - http
+      tags:
+        - default
+      summary: Healthcheck Endpoint
+      operationId: Healthcheck
+      responses:
+        '200':
+          description: OK
+  '/productid/{productId}':
+    get:
+      description: |-
+        This API call is used to get the metadata for a upc.<br><br>
+
+        Example query:
+
+        <blockquote>/productid/12345678978345</blockquote> <br><br>
+
+
+        Example Result: <br><br>
+        ```json
+        {
+        "metadata": {
+        "color": "blue",
+        "size": "XS"
+        },
+        "productId": "12345678978345"
+        }
+        ```
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      schemes:
+        - http
+      tags:
+        - productid
+      summary: Retrieves SKU Data
+      operationId: productids
+      parameters:
+        - type: string
+          x-go-name: ProductID
+          description: a product id
+          name: productId
+          in: path
+          required: true
+      responses:
+        '200':
+          description: resultsResponse
+          schema:
+            $ref: '#/definitions/resultsResponse'
+        '400':
+          $ref: '#/responses/schemaValidation'
+        '404':
+          $ref: '#/responses/NotFound'
+        '500':
+          $ref: '#/responses/internalError'
+  /skus:
+    get:
+      description: >-
+        This API call is used to retrieve a list of SKU items.
+
+
+        <blockquote>• <b>Search by sku</b>: To search by sku, you would use the
+        filter query parameter like so: /sku?$filter=(sku eq
+        'MS122-32')</blockquote>
+
+
+        <blockquote>• <b>Search by name</b>: To search by name, you would use
+        the filter query parameter like so: /location?$filter=(name eq 'mens
+        khaki slacks')</blockquote>
+
+
+
+        `/skus?$top=10&$select=sku` - Useful for paging data. Grab the top 10
+        records and only pull back the sku field
+
+
+        `/skus?$count` - Tell me how many records are in the database
+
+
+        `/skus?$filter=(sku eq '12345678') and (productList.metadata.color eq
+        'red')` - This filters on particular sku and UPCs that are classified as
+        "Red"
+
+
+        `/skus?$orderby=sku desc` - Give me back all skus in descending order by
+        sku
+
+
+        `/skus?$filter=startswith(sku,'m')` - Give me all skus that begin with
+        the letter 'm'
+
+
+        `/skus?$count&$filter=(sku eq '12345678')` - Give me the count of items
+        with the SKU `12345678``
+
+
+        `/skus?$inlinecount=allpages&$filter=(sku eq '12345678')` - Give me all
+        items with the SKU `12345678` and include how many there are
+
+
+
+
+        Example Result:<br><br>
+
+        ```json
+
+        {
+
+        "results": [
+
+        {
+
+        "sku": "12345679",
+
+        "productList": [
+
+        {
+
+        "metadata": {
+
+        "color": "blue",
+
+        "size": "XS"
+
+        },
+
+        "productId": "123456789783"
+
+        },
+
+        {
+
+        "metadata": {
+
+        "color": "red",
+
+        "size": "M"
+
+        },
+
+        "productId": "123456789784"
+
+        }
+
+        ]
+
+        }
+
+        ]
+
+        }
+
+        ```
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      schemes:
+        - http
+      tags:
+        - skus
+      summary: Retrieves SKU Data
+      operationId: getSkus
+      responses:
+        '200':
+          description: resultsResponse
+          schema:
+            $ref: '#/definitions/resultsResponse'
+        '400':
+          $ref: '#/responses/schemaValidation'
+        '500':
+          $ref: '#/responses/internalError'
+    post:
+      description: >-
+        This API call is used to upload a list of SKU items into Responsive
+        Retail.<br>
+
+        The SKU data includes:
+
+
+        <blockquote>• <b>SKU</b>: The SKU number, a unique identifier for the
+        SKU.</blockquote>
+
+
+        <blockquote>• <b>product List</b>: A list (array) of UPCs that are
+        included in the SKU.</blockquote>
+
+
+        Expected formatting of JSON input (as an example):<br><br>
+
+
+        ```json
+
+        {
+
+        "data":[{
+
+        "sku" : "MS122-32",
+
+        "productList" : [
+
+        { "productId": "00888446671444", "metadata": {"color":"blue"} },
+
+        { "productId": "889319762751", "metadata": {"size":"small"} }
+
+        ]
+
+        },
+
+        {
+
+        "sku" : "MS122-34",
+
+        "productList" : [
+
+        {"productId": "90388987132758", "metadata": {"name":"pants"} }
+
+        ]
+
+        }]
+
+        }
+
+        ```
+
+        <br>
+
+        Each SKU item is treated individually; it succeeds or fails independent
+        of the other SKUs.
+
+        Check the returned results to determine the success or failure of each
+        SKU.
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      schemes:
+        - http
+      tags:
+        - skus
+      summary: Loads SKU Data
+      operationId: postSkus
+      parameters:
+        - x-go-name: Data
+          name: data
+          in: body
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/ProdData'
+      responses:
+        '201':
+          $ref: '#/responses/Created'
+        '400':
+          $ref: '#/responses/schemaValidation'
+        '500':
+          $ref: '#/responses/internalError'
+definitions:
+  ErrReport:
+    description: ErrReport is used to wrap schema validation errors int json object
+    type: object
+    properties:
+      description:
+        type: string
+        x-go-name: Description
+      errortype:
+        type: string
+        x-go-name: ErrorType
+      field:
+        type: string
+        x-go-name: Field
+      value:
+        type: object
+        x-go-name: Value
+    x-go-package: >-
+      github.impcloud.net/RSP-Inventory-Suite/product-data-service/app/routes/handlers
+  ErrorList:
+    description: ErrorList provides a collection of errors for processing
+    type: object
+    properties:
+      errors:
+        description: |-
+          The error list
+          in: body
+        type: array
+        items:
+          $ref: '#/definitions/ErrReport'
+        x-go-name: Errors
+    x-go-package: >-
+      github.impcloud.net/RSP-Inventory-Suite/product-data-service/app/routes/handlers
+  ProdData:
+    description: ProdData represents the product data schema in the database
+    type: object
+    properties:
+      productList:
+        type: array
+        items:
+          $ref: '#/definitions/ProductMetadata'
+        x-go-name: ProductList
+      sku:
+        type: string
+        x-go-name: Sku
+    x-go-package: >-
+      github.impcloud.net/RSP-Inventory-Suite/product-data-service/app/productdata
+  ProductMetadata:
+    description: UpcMetadata represents the productList schema attribute in the database
+    type: object
+    properties:
+      becomingReadable:
+        type: number
+        format: double
+        x-go-name: BecomingReadable
+      beingRead:
+        type: number
+        format: double
+        x-go-name: BeingRead
+      dailyTurn:
+        type: number
+        format: double
+        x-go-name: DailyTurn
+      exitError:
+        type: number
+        format: double
+        x-go-name: ExitError
+      metadata:
+        type: object
+        additionalProperties:
+          type: object
+        x-go-name: Metadata
+      productId:
+        type: string
+        x-go-name: ProductID
+    x-go-package: >-
+      github.impcloud.net/RSP-Inventory-Suite/product-data-service/app/productdata
+  resultsResponse:
+    description: 'Response wraps results, inlinecount, and extra fields in a json object'
+    type: object
+    properties:
+      count:
+        type: integer
+        format: int64
+        x-go-name: Count
+      results:
+        description: Array containing results of query
+        type: object
+        x-go-name: Results
+    x-go-name: Response
+    x-go-package: >-
+      github.impcloud.net/RSP-Inventory-Suite/product-data-service/app/routes/handlers
+responses:
+  Created:
+    description: Created
+  NotFound:
+    description: NotFound
+  internalError:
+    description: JSONError is the response for errors that occur within the API.
+  schemaValidation:
+    description: ErrorList provides a collection of errors for processing
+    schema:
+      type: array
+      items:
+        $ref: '#/definitions/ErrReport'

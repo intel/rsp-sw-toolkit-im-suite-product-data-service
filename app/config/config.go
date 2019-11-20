@@ -26,7 +26,7 @@ import (
 
 type (
 	variables struct {
-		ServiceName, LoggingLevel, Port, ZeroMQ           string
+		ServiceName, LoggingLevel, Port                   string
 		DbHost, DbPort, DbUser, DbPass, dbSSLmode, DbName string
 		TelemetryEndpoint, TelemetryDataStoreName         string
 		ResponseLimit                                     int
@@ -85,9 +85,6 @@ func InitConfig() error {
 	errorHandler(err)
 
 	AppConfig.TelemetryDataStoreName, err = config.GetString("telemetryDataStoreName")
-	errorHandler(err)
-
-	AppConfig.ZeroMQ, err = config.GetString("zeroMQ")
 	errorHandler(err)
 
 	return nil

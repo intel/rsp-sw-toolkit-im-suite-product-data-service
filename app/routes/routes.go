@@ -78,7 +78,7 @@ func NewRouter(db *sql.DB, size int) *mux.Router {
 		//
 		// <blockquote>• <b>SKU</b>: The SKU number, a unique identifier for the SKU.</blockquote>
 		//
-		// <blockquote>• <b>UPC List</b>: A list (array) of UPCs that are included in the SKU.</blockquote>
+		// <blockquote>• <b>Product List</b>: A list (array) of UPCs that are included in the SKU.</blockquote>
 		//
 		// Expected formatting of JSON input (as an example):<br><br>
 		//
@@ -87,14 +87,14 @@ func NewRouter(db *sql.DB, size int) *mux.Router {
 		//"data":[{
 		//   "sku" : "MS122-32",
 		//   "productList" : [
-		//     { "upc": "00888446671444", "metadata": {"color":"blue"} },
-		//     { "upc": "889319762751", "metadata": {"size":"small"} }
+		//     { "productId": "00888446671444", "metadata": {"color":"blue"} },
+		//     { "productId": "889319762751", "metadata": {"size":"small"} }
 		//    ]
 		// 	 },
 		// 	{
 		//    "sku" : "MS122-34",
-		//    "upcList" : [
-		//      {"upc": "90388987132758", "metadata": {"name":"pants"} }
+		//    "productList" : [
+		//      {"productId": "90388987132758", "metadata": {"name":"pants"} }
 		//    ]
 		//  }]
 		// }
@@ -138,7 +138,7 @@ func NewRouter(db *sql.DB, size int) *mux.Router {
 		//
 		// `/skus?$count` - Tell me how many records are in the database
 		//
-		// `/skus?$filter=(sku eq '12345678') and (upclist.metadata.color eq 'red')` - This filters on particular sku and UPCs that are classified as "Red"
+		// `/skus?$filter=(sku eq '12345678') and (productList.metadata.color eq 'red')` - This filters on particular sku and UPCs that are classified as "Red"
 		//
 		// `/skus?$orderby=sku desc` - Give me back all skus in descending order by sku
 		//
@@ -156,20 +156,20 @@ func NewRouter(db *sql.DB, size int) *mux.Router {
 		//     "results": [
 		//         {
 		//             "sku": "12345679",
-		//             "upclist": [
+		//             "productList": [
 		//                 {
 		//                     "metadata": {
 		//                         "color": "blue",
 		//                         "size": "XS"
 		//                     },
-		//                     "upc": "123456789783"
+		//                     "productId": "123456789783"
 		//                 },
 		//                 {
 		//                     "metadata": {
 		//                         "color": "red",
 		//                         "size": "M"
 		//                     },
-		//                     "upc": "123456789784"
+		//                     "productId": "123456789784"
 		//                 }
 		//             ]
 		//         }
@@ -204,7 +204,7 @@ func NewRouter(db *sql.DB, size int) *mux.Router {
 		//
 		// Example query:
 		//
-		// <blockquote>/upc/12345678978345</blockquote> <br><br>
+		// <blockquote>/productid/12345678978345</blockquote> <br><br>
 		//
 		//
 		// Example Result: <br><br>
@@ -214,7 +214,7 @@ func NewRouter(db *sql.DB, size int) *mux.Router {
 		// 				"color": "blue",
 		// 				 "size": "XS"
 		// 			  },
-		//   "upc": "12345678978345"
+		//   "productid": "12345678978345"
 		// }
 		//```
 		//
