@@ -21,7 +21,7 @@ sudo curl \
     sudo chmod a+x /usr/local/bin/docker-compose
 ```
 
-- EdgeX Edingurgh:
+- EdgeX Edinburgh:
 
 ```
 wget https://raw.githubusercontent.com/edgexfoundry/developer-scripts/master/releases/edinburgh/compose-files/docker-compose-edinburgh-no-secty-1.0.1.yml
