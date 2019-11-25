@@ -67,6 +67,6 @@ services:
       dbSSLmode: "disable"
       zeroMQ: "edgex-core-data:5563"
       telemetryEndpoint: ""
-      telemetryDataStoreName: "BadgerBay"
+      telemetryDataStoreName: "inventory-suite"
       responseLimit: 10000      
       serviceName: "Product Data Service"  
