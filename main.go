@@ -406,7 +406,10 @@ func setLoggingLevel(loggingLevel string) {
 func dbSetup(host, port, user, password, dbname string) (*sql.DB, error) {
 
 	// Connect to PostgreSQL
-	psqlInfo := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable", host, port, user, password, dbname)
+	psqlInfo := fmt.Sprintf("host=%s port=%s user=%s dbname=%s sslmode=disable", host, port, user, dbname)
+	if password != "" {
+		psqlInfo += " password=" + password
+	}
 
 	db, err := sql.Open("postgres", psqlInfo)
 	if err != nil {
