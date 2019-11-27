@@ -6,7 +6,7 @@
   "dbPass": "",
   "dbPort": "5432",
   "dbName": "postgres",
-  "dbSSLmode": "disable",
+  "dbSSLmode": "require",
   "telemetryEndpoint": "",      
   "telemetryDataStoreName": "",  
   "loggingLevel": "debug",      
