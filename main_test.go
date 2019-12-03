@@ -43,6 +43,7 @@ func TestDataProcess(t *testing.T) {
 		config.AppConfig.DbPort,
 		config.AppConfig.DbUser, config.AppConfig.DbPass,
 		config.AppConfig.DbName,
+		config.AppConfig.DbSSLMode,
 	)
 	if err != nil {
 		t.Fatal("Unable to connect to database")

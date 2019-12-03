@@ -87,6 +87,7 @@ func main() {
 		config.AppConfig.DbPort,
 		config.AppConfig.DbUser, config.AppConfig.DbPass,
 		config.AppConfig.DbName,
+		config.AppConfig.DbSSLMode,
 	)
 	if err != nil {
 		mDbErr.Update(1)
@@ -403,10 +404,11 @@ func setLoggingLevel(loggingLevel string) {
 	golog.Printf("Logging level set to %s\n", loggingLevel)
 }
 
-func dbSetup(host, port, user, password, dbname string) (*sql.DB, error) {
+func dbSetup(host, port, user, password, dbname, sslmode string) (*sql.DB, error) {
 
 	// Connect to PostgreSQL
-	psqlInfo := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable", host, port, user, password, dbname)
+	psqlInfo := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=%s",
+		host, port, user, password, dbname, sslmode)
 
 	db, err := sql.Open("postgres", psqlInfo)
 	if err != nil {
