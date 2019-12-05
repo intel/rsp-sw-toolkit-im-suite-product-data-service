@@ -1,7 +1,7 @@
 {
   "serviceName": "Product data Service",  
   "_comment": " 'postgres' hostname is used in the ci/cd pipelines, set to 'localhost' if running unit test locally",
-  "dbHost": "postgres", 
+  "dbHost": "postgres",
   "dbUser": "postgres",
   "dbPass": "",
   "dbPort": "5432",

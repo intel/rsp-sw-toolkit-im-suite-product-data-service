@@ -336,10 +336,14 @@ func TestBulkInsert(t *testing.T) {
 func dbSetup(t *testing.T) *sql.DB {
 
 	// Connect to PostgreSQL
-	psqlInfo := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable", config.AppConfig.DbHost,
+	psqlInfo := fmt.Sprintf("host=%s port=%s user=%s dbname=%s sslmode=%s", config.AppConfig.DbHost,
 		config.AppConfig.DbPort,
-		config.AppConfig.DbUser, config.AppConfig.DbPass,
-		config.AppConfig.DbName)
+		config.AppConfig.DbUser,
+		config.AppConfig.DbName,
+		config.AppConfig.DbSSLMode)
+	if config.AppConfig.DbPass != "" {
+		psqlInfo += " password=" + config.AppConfig.DbPass
+	}
 
 	db, err := sql.Open("postgres", psqlInfo)
 	if err != nil {
