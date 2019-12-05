@@ -27,7 +27,7 @@ import (
 type (
 	variables struct {
 		ServiceName, LoggingLevel, Port                   string
-		DbHost, DbPort, DbUser, DbPass, dbSSLmode, DbName string
+		DbHost, DbPort, DbUser, DbPass, DbSSLMode, DbName string
 		TelemetryEndpoint, TelemetryDataStoreName         string
 		ResponseLimit                                     int
 	}
@@ -65,7 +65,7 @@ func InitConfig() error {
 	AppConfig.DbName, err = config.GetString("dbName")
 	errorHandler(err)
 
-	AppConfig.dbSSLmode, err = config.GetString("dbSSLmode")
+	AppConfig.DbSSLMode, err = config.GetString("dbSSLMode")
 	errorHandler(err)
 
 	AppConfig.DbPass, err = helper.GetSecret("dbPass")
