@@ -463,10 +463,13 @@ func insertSampleProductMetadata(db *sql.DB, t *testing.T) []productdata.SKUData
 func dbSetup(t *testing.T) *sql.DB {
 
 	// Connect to PostgreSQL
-	psqlInfo := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable", config.AppConfig.DbHost,
+	psqlInfo := fmt.Sprintf("host=%s port=%s user=%s dbname=%s sslmode=disable", config.AppConfig.DbHost,
 		config.AppConfig.DbPort,
-		config.AppConfig.DbUser, config.AppConfig.DbPass,
+		config.AppConfig.DbUser,
 		config.AppConfig.DbName)
+	if config.AppConfig.DbPass != "" {
+		psqlInfo += " password=" + config.AppConfig.DbPass
+	}
 
 	db, err := sql.Open("postgres", psqlInfo)
 	if err != nil {
