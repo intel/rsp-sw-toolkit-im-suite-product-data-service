@@ -10,7 +10,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.impcloud.net/RSP-Inventory-Suite/product-data-service/pkg/web"
+	"github.com/intel/rsp-sw-toolkit-im-suite-product-data-service/pkg/web"
 
 	log "github.com/sirupsen/logrus"
 )

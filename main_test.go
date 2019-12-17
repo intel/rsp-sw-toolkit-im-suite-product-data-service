@@ -10,7 +10,7 @@ import (
 	"os"
 	"testing"
 
-	"github.impcloud.net/RSP-Inventory-Suite/product-data-service/app/config"
+	"github.com/intel/rsp-sw-toolkit-im-suite-product-data-service/app/config"
 )
 
 //nolint :dupl

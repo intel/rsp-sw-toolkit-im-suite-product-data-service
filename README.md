@@ -31,10 +31,7 @@ sudo docker-compose -f docker-compose-edinburgh-no-secty-1.0.1.yml up -d
 ### Installation ###
 
 ```
-git clone https://github.impcloud.net/RSP-Inventory-Suite/product-data-service.git
-cd product-data-service
-sudo make build
-sudo make deploy
+sudo make build deploy
 ```
 
 ### Incoming Schema example ###
@@ -112,7 +109,8 @@ GET http://127.0.0.1:8080/skus?$filter=sku eq '123ABC'
 }
 ```
 
-For more information about odata, visit [OData.org](https://www.odata.org/) and [go-odata](https://github.impcloud.net/RSP-Inventory-Suite/go-odata)
+For more information about odata, visit [OData.org](https://www.odata.org/) 
+and [go-odata](https://github.com/intel/rsp-sw-toolkit-im-suite-go-odata).
 
 ### API Documentation ###
 

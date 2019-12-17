@@ -16,8 +16,8 @@ import (
 	"strconv"
 	"testing"
 
-	"github.impcloud.net/RSP-Inventory-Suite/product-data-service/app/config"
-	"github.impcloud.net/RSP-Inventory-Suite/product-data-service/pkg/web"
+	"github.com/intel/rsp-sw-toolkit-im-suite-product-data-service/app/config"
+	"github.com/intel/rsp-sw-toolkit-im-suite-product-data-service/pkg/web"
 )
 
 func TestMain(m *testing.M) {

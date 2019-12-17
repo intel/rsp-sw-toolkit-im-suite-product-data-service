@@ -23,13 +23,13 @@ import (
 	"github.com/edgexfoundry/app-functions-sdk-go/appcontext"
 	"github.com/edgexfoundry/app-functions-sdk-go/appsdk"
 	"github.com/edgexfoundry/go-mod-core-contracts/models"
+	"github.com/intel/rsp-sw-toolkit-im-suite-product-data-service/app/config"
+	"github.com/intel/rsp-sw-toolkit-im-suite-product-data-service/app/productdata"
+	"github.com/intel/rsp-sw-toolkit-im-suite-product-data-service/app/routes"
+	"github.com/intel/rsp-sw-toolkit-im-suite-utilities/go-metrics"
+	reporter "github.com/intel/rsp-sw-toolkit-im-suite-utilities/go-metrics-influxdb"
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
-	"github.impcloud.net/RSP-Inventory-Suite/product-data-service/app/config"
-	"github.impcloud.net/RSP-Inventory-Suite/product-data-service/app/productdata"
-	"github.impcloud.net/RSP-Inventory-Suite/product-data-service/app/routes"
-	"github.impcloud.net/RSP-Inventory-Suite/utilities/go-metrics"
-	reporter "github.impcloud.net/RSP-Inventory-Suite/utilities/go-metrics-influxdb"
 )
 
 const serviceKey = "product-data-service"
