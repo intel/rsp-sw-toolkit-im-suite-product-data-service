@@ -6,9 +6,9 @@
 package config
 
 import (
+	"github.com/intel/rsp-sw-toolkit-im-suite-utilities/configuration"
+	"github.com/intel/rsp-sw-toolkit-im-suite-utilities/helper"
 	log "github.com/sirupsen/logrus"
-	"github.impcloud.net/RSP-Inventory-Suite/utilities/configuration"
-	"github.impcloud.net/RSP-Inventory-Suite/utilities/helper"
 )
 
 type (

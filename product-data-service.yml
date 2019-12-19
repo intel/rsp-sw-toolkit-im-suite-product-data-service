@@ -298,8 +298,6 @@ definitions:
       value:
         type: object
         x-go-name: Value
-    x-go-package: >-
-      github.impcloud.net/RSP-Inventory-Suite/product-data-service/app/routes/handlers
   ErrorList:
     description: ErrorList provides a collection of errors for processing
     type: object
@@ -312,8 +310,6 @@ definitions:
         items:
           $ref: '#/definitions/ErrReport'
         x-go-name: Errors
-    x-go-package: >-
-      github.impcloud.net/RSP-Inventory-Suite/product-data-service/app/routes/handlers
   ProdData:
     description: ProdData represents the product data schema in the database
     type: object
@@ -326,8 +322,6 @@ definitions:
       sku:
         type: string
         x-go-name: Sku
-    x-go-package: >-
-      github.impcloud.net/RSP-Inventory-Suite/product-data-service/app/productdata
   ProductMetadata:
     description: UpcMetadata represents the productList schema attribute in the database
     type: object
@@ -356,8 +350,6 @@ definitions:
       productId:
         type: string
         x-go-name: ProductID
-    x-go-package: >-
-      github.impcloud.net/RSP-Inventory-Suite/product-data-service/app/productdata
   resultsResponse:
     description: 'Response wraps results, inlinecount, and extra fields in a json object'
     type: object
@@ -371,8 +363,6 @@ definitions:
         type: object
         x-go-name: Results
     x-go-name: Response
-    x-go-package: >-
-      github.impcloud.net/RSP-Inventory-Suite/product-data-service/app/routes/handlers
 responses:
   Created:
     description: Created

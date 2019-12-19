@@ -11,8 +11,8 @@ import (
 	"net/http"
 	"runtime/debug"
 
+	"github.com/intel/rsp-sw-toolkit-im-suite-product-data-service/pkg/web"
 	log "github.com/sirupsen/logrus"
-	"github.impcloud.net/RSP-Inventory-Suite/product-data-service/pkg/web"
 )
 
 // Recover middleware

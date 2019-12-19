@@ -15,11 +15,11 @@ import (
 	"strings"
 	"time"
 
+	odata "github.com/intel/rsp-sw-toolkit-im-suite-go-odata/postgresql"
+	"github.com/intel/rsp-sw-toolkit-im-suite-product-data-service/pkg/web"
+	"github.com/intel/rsp-sw-toolkit-im-suite-utilities/go-metrics"
 	"github.com/lib/pq"
 	"github.com/pkg/errors"
-	odata "github.impcloud.net/RSP-Inventory-Suite/go-odata/postgresql"
-	"github.impcloud.net/RSP-Inventory-Suite/product-data-service/pkg/web"
-	"github.impcloud.net/RSP-Inventory-Suite/utilities/go-metrics"
 )
 
 const productDataTable = "skus"

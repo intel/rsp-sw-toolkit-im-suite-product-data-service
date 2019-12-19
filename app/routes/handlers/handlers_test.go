@@ -18,10 +18,10 @@ import (
 	"testing"
 
 	"github.com/gorilla/mux"
+	"github.com/intel/rsp-sw-toolkit-im-suite-product-data-service/app/config"
+	"github.com/intel/rsp-sw-toolkit-im-suite-product-data-service/app/productdata"
+	"github.com/intel/rsp-sw-toolkit-im-suite-product-data-service/pkg/web"
 	log "github.com/sirupsen/logrus"
-	"github.impcloud.net/RSP-Inventory-Suite/product-data-service/app/config"
-	"github.impcloud.net/RSP-Inventory-Suite/product-data-service/app/productdata"
-	"github.impcloud.net/RSP-Inventory-Suite/product-data-service/pkg/web"
 )
 
 type inputTest struct {

@@ -10,9 +10,9 @@ import (
 
 	"github.com/gorilla/mux"
 
-	"github.impcloud.net/RSP-Inventory-Suite/product-data-service/app/routes/handlers"
-	"github.impcloud.net/RSP-Inventory-Suite/product-data-service/pkg/middlewares"
-	"github.impcloud.net/RSP-Inventory-Suite/product-data-service/pkg/web"
+	"github.com/intel/rsp-sw-toolkit-im-suite-product-data-service/app/routes/handlers"
+	"github.com/intel/rsp-sw-toolkit-im-suite-product-data-service/pkg/middlewares"
+	"github.com/intel/rsp-sw-toolkit-im-suite-product-data-service/pkg/web"
 )
 
 // Route struct holds attributes to declare routes

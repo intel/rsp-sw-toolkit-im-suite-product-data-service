@@ -9,16 +9,16 @@ import (
 	"context"
 	"database/sql"
 	"encoding/json"
+	"github.com/intel/rsp-sw-toolkit-im-suite-utilities/go-metrics"
 	"io"
 	"net/http"
 	"strconv"
 	"time"
 
 	"github.com/gorilla/mux"
-	"github.com/xeipuuv/gojsonschema"
-	"github.impcloud.net/RSP-Inventory-Suite/product-data-service/app/productdata"
-	"github.impcloud.net/RSP-Inventory-Suite/product-data-service/pkg/web"
-	"github.impcloud.net/RSP-Inventory-Suite/utilities/go-metrics"
+	"github.com/intel/rsp-sw-toolkit-im-suite-gojsonschema"
+	"github.com/intel/rsp-sw-toolkit-im-suite-product-data-service/app/productdata"
+	"github.com/intel/rsp-sw-toolkit-im-suite-product-data-service/pkg/web"
 )
 
 // Mapping represents the User API method handler set.
