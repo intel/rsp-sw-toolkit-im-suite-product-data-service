@@ -16,7 +16,7 @@ RUN for filename in $( \
     done
 
 
-FROM busybox:1.30.1
+FROM alpine:3.7
 
 # ZeroMQ libraries and dependencies
 COPY --from=builder /lib/libc.musl-x86_64.so.1 /lib/
